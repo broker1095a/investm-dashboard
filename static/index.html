@@ -242,16 +242,16 @@
 
     <div class="container">
         <div class="tabs">
-            <button class="tab-btn" onclick="switchTab('portfolio', this)">&#128202; Портфель</button>
+            <button class="tab-btn active" onclick="switchTab('portfolio', this)">&#128202; Портфель</button>
             <button class="tab-btn" onclick="switchTab('liquidity', this)">&#128176; Ликвидность</button>
             <button class="tab-btn" onclick="switchTab('bonds', this)">&#128196; Облигации</button>
             <button class="tab-btn" onclick="switchTab('stocks', this)">&#128200; Акции</button>
-            <button class="tab-btn active" onclick="switchTab('crypto', this)">&#8383; Крипта</button>
+            <button class="tab-btn" onclick="switchTab('crypto', this)">&#8383; Крипта</button>
             <button class="tab-btn" onclick="switchTab('property', this)">&#127968; Недвижимость</button>
         </div>
 
         <!-- ======= PORTFOLIO TAB ======= -->
-        <div id="tab-portfolio" class="tab-content">
+        <div id="tab-portfolio" class="tab-content active">
             <div class="kpi-row" id="portfolioKpi"></div>
             <div class="charts-grid">
                 <div class="chart-card"><h3>Структура портфеля</h3><div class="chart-wrapper"><canvas id="portfolioDoughnut"></canvas></div></div>
@@ -303,7 +303,7 @@
         </div>
 
         <!-- ======= CRYPTO TAB (existing BTC dashboard - unchanged logic) ======= -->
-        <div id="tab-crypto" class="tab-content active">
+        <div id="tab-crypto" class="tab-content">
             <section class="price-hero">
                 <div class="price-main">
                     <div class="label">Bitcoin (BTC/USD)</div>
@@ -1007,8 +1007,10 @@
     // INIT
     // ================================================================
     async function init() {
-        await loadData();
-        await loadPriceChart(30);
+        // Render portfolio tab first (default tab)
+        tabRendered['portfolio'] = true;
+        await loadData(); // this also updates tCrypto and re-renders portfolio
+        loadPriceChart(30); // load chart in background (for when user clicks Crypto)
         setInterval(loadData, 60000);
         // Update header clock
         setInterval(() => {
