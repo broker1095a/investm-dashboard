@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BTC Dashboard v3.5</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a24;
+            --border: #2a2a3a;
+            --text-primary: #ffffff;
+            --text-secondary: #8a8a9a;
+            --accent-green: #00d26a;
+            --accent-red: #ff4757;
+            --accent-yellow: #ffc107;
+            --accent-blue: #4a9eff;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 30px; }
+        .logo {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #f7931a, #ffab40);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .update-time { color: var(--text-secondary); font-size: 13px; margin-top: 5px; }
+        .version { font-size: 14px; color: var(--text-secondary); font-weight: 400; }
+
+        /* Price Hero */
+        .price-hero {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 20px;
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border);
+        }
+        .price-main .label { color: var(--text-secondary); font-size: 14px; margin-bottom: 5px; }
+        .price-main .price { font-size: 48px; font-weight: 800; }
+        .price-meta { color: var(--text-secondary); font-size: 14px; margin-top: 10px; display: flex; gap: 20px; }
+        .portfolio-card {
+            background: var(--bg-secondary);
+            border-radius: 15px;
+            padding: 20px 25px;
+            border: 1px solid var(--border);
+            min-width: 260px;
+        }
+        .portfolio-card .title { color: var(--text-secondary); font-size: 14px; margin-bottom: 8px; }
+        .portfolio-card .value { font-size: 28px; font-weight: 700; }
+        .portfolio-pnl { font-size: 16px; margin: 5px 0 10px; }
+        .portfolio-pnl.positive { color: var(--accent-green); }
+        .portfolio-pnl.negative { color: var(--accent-red); }
+        .portfolio-details { color: var(--text-secondary); font-size: 13px; line-height: 1.8; }
+        .portfolio-details span { color: var(--text-primary); float: right; }
+
+        /* Score Section */
+        .score-section {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 25px 30px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border);
+        }
+        .score-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+        .score-title { font-size: 20px; font-weight: 600; }
+        .score-subtitle { color: var(--text-secondary); font-size: 12px; margin-top: 5px; line-height: 1.5; }
+        .score-value-box { text-align: right; }
+        .score-value { font-size: 48px; font-weight: 800; }
+        .score-label { font-size: 14px; font-weight: 600; margin-top: 5px; }
+        .rainbow-bar-container { position: relative; margin-bottom: 15px; }
+        .rainbow-bar {
+            height: 16px;
+            border-radius: 8px;
+            background: linear-gradient(to right, #dc2626 0%, #f97316 20%, #eab308 40%, #84cc16 60%, #22c55e 80%, #22c55e 100%);
+        }
+        .rainbow-pointer {
+            position: absolute;
+            top: -8px;
+            width: 4px;
+            height: 32px;
+            background: white;
+            border-radius: 2px;
+            transition: left 0.8s ease;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+        .rainbow-labels {
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-secondary);
+            font-size: 11px;
+            margin-top: 8px;
+        }
+
+        /* Insights */
+        .insights-box {
+            background: linear-gradient(135deg, rgba(0,210,106,0.08), rgba(0,210,106,0.02));
+            border: 1px solid rgba(0,210,106,0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .insights-title { font-size: 16px; font-weight: 600; margin-bottom: 15px; }
+        .insight-item {
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 3px solid var(--accent-green);
+            background: rgba(0,210,106,0.05);
+        }
+        .insight-item.bearish {
+            border-left-color: var(--accent-red);
+            background: rgba(255,71,87,0.05);
+        }
+        .insight-item.neutral {
+            border-left-color: var(--accent-yellow);
+            background: rgba(255,193,7,0.05);
+        }
+        .insight-header { font-weight: 600; margin-bottom: 5px; }
+        .insight-text { color: var(--text-secondary); font-size: 13px; line-height: 1.5; }
+
+        /* Chart Section */
+        .chart-section {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 25px 30px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border);
+        }
+        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .chart-title { font-size: 20px; font-weight: 600; }
+        .chart-tabs { display: flex; gap: 8px; }
+        .chart-tab {
+            padding: 6px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+        .chart-tab:hover { border-color: var(--accent-blue); color: var(--text-primary); }
+        .chart-tab.active { background: var(--accent-blue); color: white; border-color: var(--accent-blue); }
+        .chart-container { height: 350px; position: relative; }
+        .chart-legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+        /* Indicators Section */
+        .indicators-section { margin-bottom: 25px; }
+        .indicators-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+        .indicators-header h2 { font-size: 22px; font-weight: 600; }
+        .badge-clickable {
+            background: var(--accent-blue);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .category-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin: 15px 0 10px;
+            padding-left: 10px;
+            border-left: 3px solid var(--accent-blue);
+        }
+        .indicators-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .indicator-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .indicator-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(74, 158, 255, 0.15);
+        }
+        .indicator-card.highlight { border-color: var(--accent-blue); background: rgba(74, 158, 255, 0.05); }
+        .indicator-card::after {
+            content: '\2192';
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 16px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .indicator-card:hover::after { opacity: 1; }
+        .indicator-circle {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .indicator-circle.strong-buy { background: rgba(34, 197, 94, 0.2); color: #22c55e; box-shadow: 0 0 20px rgba(34, 197, 94, 0.3); }
+        .indicator-circle.buy { background: rgba(132, 204, 22, 0.2); color: #84cc16; }
+        .indicator-circle.neutral { background: rgba(234, 179, 8, 0.2); color: #eab308; }
+        .indicator-circle.sell { background: rgba(249, 115, 22, 0.2); color: #f97316; }
+        .indicator-circle.strong-sell { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .indicator-info { flex: 1; min-width: 0; }
+        .indicator-name { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .indicator-value { font-size: 16px; font-weight: 700; margin: 3px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .indicator-signal { font-size: 12px; font-weight: 600; }
+        .indicator-signal.strong-buy, .indicator-signal.strong_buy { color: #22c55e; }
+        .indicator-signal.buy { color: #84cc16; }
+        .indicator-signal.neutral { color: #eab308; }
+        .indicator-signal.sell { color: #f97316; }
+        .indicator-signal.strong-sell, .indicator-signal.strong_sell { color: #ef4444; }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        .modal-close {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .modal-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .modal-icon { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+        .modal-title { font-size: 22px; font-weight: 700; }
+        .modal-subtitle { color: var(--text-secondary); font-size: 14px; }
+        .modal-section { margin-bottom: 20px; }
+        .modal-section-title { font-size: 14px; font-weight: 600; color: var(--accent-blue); margin-bottom: 10px; }
+        .current-value-box {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+        }
+        .current-value-main { font-size: 24px; font-weight: 700; }
+        .current-signal-badge {
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .current-signal-badge.strong-buy, .current-signal-badge.strong_buy { background: rgba(34,197,94,0.2); color: #22c55e; }
+        .current-signal-badge.buy { background: rgba(132,204,22,0.2); color: #84cc16; }
+        .current-signal-badge.neutral { background: rgba(234,179,8,0.2); color: #eab308; }
+        .current-signal-badge.sell { background: rgba(249,115,22,0.2); color: #f97316; }
+        .current-signal-badge.strong-sell, .current-signal-badge.strong_sell { background: rgba(239,68,68,0.2); color: #ef4444; }
+        .explanation-box { color: var(--text-secondary); font-size: 14px; line-height: 1.7; }
+        .explanation-box p { margin-bottom: 10px; }
+        .explanation-box .highlight { color: #22c55e; font-weight: 600; }
+        .explanation-box .warning { color: #f97316; font-weight: 600; }
+        .history-box { display: flex; flex-direction: column; gap: 8px; }
+        .history-item {
+            display: flex;
+            gap: 15px;
+            padding: 10px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            font-size: 13px;
+        }
+        .history-date { color: var(--accent-blue); font-weight: 600; white-space: nowrap; min-width: 100px; }
+        .history-event { color: var(--text-secondary); }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .price-hero { grid-template-columns: 1fr; }
+            .price-main .price { font-size: 36px; }
+            .portfolio-card { min-width: auto; }
+            .score-header { flex-direction: column; }
+            .score-value { font-size: 36px; }
+            .indicators-grid { grid-template-columns: 1fr 1fr; }
+            .chart-container { height: 250px; }
+        }
+        @media (max-width: 480px) {
+            body { padding: 10px; }
+            .indicators-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="logo">&#8383; BTC Dashboard <span class="version">v3.5</span></div>
+            <div class="update-time">Обновлено: <span id="updateTime">загрузка...</span></div>
+        </header>
+
+        <!-- Price + Portfolio -->
+        <section class="price-hero">
+            <div class="price-main">
+                <div class="label">Bitcoin (BTC/USD)</div>
+                <div class="price" id="btcPrice">$0</div>
+                <div class="price-meta">
+                    <span>Объём 24ч: <span id="volume24h">$0</span></span>
+                    <span>Капитализация: <span id="marketCap">$0</span></span>
+                </div>
+            </div>
+            <div class="portfolio-card">
+                <div class="title">&#128188; Мой портфель</div>
+                <div class="value" id="portfolioValue">$0</div>
+                <div class="portfolio-pnl positive" id="portfolioPnl">+$0 (+0%)</div>
+                <div class="portfolio-details">
+                    Количество: <span id="portfolioBtc">982 BTC</span><br>
+                    Средняя цена: <span id="portfolioAvg">$65,188</span><br>
+                    Инвестировано: <span id="portfolioInvested">$64,014,616</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Buy Score -->
+        <section class="score-section">
+            <div class="score-header">
+                <div>
+                    <div class="score-title">&#127919; Buy Score v3.5 — Индекс покупки</div>
+                    <div class="score-subtitle">14 индикаторов &bull; Нажми на любой для подробностей</div>
+                </div>
+                <div class="score-value-box">
+                    <div class="score-value" id="scoreValue">0%</div>
+                    <div class="score-label" id="scoreLabel">ЗАГРУЗКА</div>
+                </div>
+            </div>
+            <div class="rainbow-bar-container">
+                <div class="rainbow-bar"></div>
+                <div class="rainbow-pointer" id="scorePointer" style="left: 50%"></div>
+            </div>
+            <div class="rainbow-labels">
+                <span>0% ПРОДАВАТЬ</span>
+                <span>25%</span>
+                <span>50% ДЕРЖАТЬ</span>
+                <span>75%</span>
+                <span>100% ПОКУПАТЬ</span>
+            </div>
+            <div class="insights-box">
+                <div class="insights-title">&#128161; Умные инсайты</div>
+                <div id="insightsList"></div>
+            </div>
+        </section>
+
+        <!-- Price Chart -->
+        <section class="chart-section">
+            <div class="chart-header">
+                <div class="chart-title">&#128200; История цены BTC</div>
+                <div class="chart-tabs">
+                    <button class="chart-tab" data-days="7">7 дней</button>
+                    <button class="chart-tab active" data-days="30">30 дней</button>
+                    <button class="chart-tab" data-days="90">90 дней</button>
+                    <button class="chart-tab" data-days="200">200 дней</button>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="priceChart"></canvas>
+            </div>
+            <div class="chart-legend">
+                <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div> 80-100% Покупай</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#84cc16"></div> 65-79%</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#eab308"></div> 35-64% Держи</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div> 20-34%</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div> 0-19% Продавай</div>
+            </div>
+        </section>
+
+        <!-- Market Indicators -->
+        <section class="indicators-section">
+            <div class="indicators-header">
+                <h2>&#128200; Индикаторы рынка</h2>
+                <span class="badge-clickable">Кликабельные!</span>
+            </div>
+
+            <div class="category-label">&#128279; On-Chain (блокчейн данные)</div>
+            <div class="indicators-grid" id="onchainGrid"></div>
+
+            <div class="category-label">&#128201; Технический анализ</div>
+            <div class="indicators-grid" id="technicalGrid"></div>
+
+            <div class="category-label">&#127757; Макро (мировая экономика)</div>
+            <div class="indicators-grid" id="macroGrid"></div>
+
+            <div class="category-label">&#9200; Циклы</div>
+            <div class="indicators-grid" id="cycleGrid"></div>
+
+            <div class="category-label">&#128202; Деривативы</div>
+            <div class="indicators-grid" id="derivativesGrid"></div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            BTC Dashboard v3.5 &bull; 14 интерактивных индикаторов
+        </footer>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <div class="modal-header">
+                <div class="modal-icon" id="modalIcon"></div>
+                <div>
+                    <div class="modal-title" id="modalTitle"></div>
+                    <div class="modal-subtitle" id="modalSubtitle"></div>
+                </div>
+            </div>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script>
+    const API_BASE = '/api';
+    let priceChart = null;
+    let currentDays = 30;
+    let globalIndicators = {};
+
+    const formatUSD = (num) => '$' + Math.round(num).toLocaleString('en-US');
+    const formatBillion = (num) => '$' + (num / 1e9).toFixed(1) + 'B';
+    const formatPercent = (num) => (num >= 0 ? '+' : '') + num.toFixed(2) + '%';
+
+    function getScoreColor(score) {
+        if (score >= 80) return '#22c55e';
+        if (score >= 65) return '#84cc16';
+        if (score >= 35) return '#eab308';
+        if (score >= 20) return '#f97316';
+        return '#ef4444';
+    }
+
+    function signalToClass(signal) {
+        return signal ? signal.replace('_', '-') : 'neutral';
+    }
+
+    function signalToText(signal) {
+        const map = {
+            'strong_buy': 'ПОКУПАТЬ',
+            'buy': 'Покупать',
+            'neutral': 'Держать',
+            'sell': 'Продавать',
+            'strong_sell': 'ПРОДАВАТЬ'
+        };
+        return map[signal] || 'Держать';
+    }
+
+    // ─── Indicator configs with explanations ───
+    const indicatorConfig = {
+        mvrv_approx: {
+            name: 'MVRV Ratio', icon: '\ud83d\udcca', category: 'onchain',
+            shortDesc: 'Рыночная vs реализованная стоимость',
+            fullExplanation: `
+                <p><strong>MVRV (Market Value to Realized Value)</strong> \u2014 один из самых важных on-chain индикаторов.</p>
+                <p>Он сравнивает текущую рыночную капитализацию с "реализованной" стоимостью.</p>
+                <p><strong>Как читать:</strong></p>
+                <p>\u2022 <span class="highlight">MVRV < 1.0</span> \u2014 цена ниже средней стоимости покупки всех холдеров. Исторически это дно!</p>
+                <p>\u2022 MVRV 1.0-2.0 \u2014 справедливая оценка</p>
+                <p>\u2022 <span class="warning">MVRV > 3.5</span> \u2014 рынок перегрет</p>
+            `,
+            historicalEvents: [
+                { date: 'Март 2020', event: 'MVRV 0.85 \u2192 BTC вырос с $5K до $64K' },
+                { date: 'Ноябрь 2022', event: 'MVRV 0.92 \u2192 BTC вырос с $16K до $73K' },
+                { date: 'Ноябрь 2021', event: 'MVRV 3.9 \u2192 началось падение с $69K' }
+            ]
+        },
+        puell_multiple: {
+            name: 'Puell Multiple', icon: '\u26cf\ufe0f', category: 'onchain',
+            shortDesc: 'Доход майнеров vs среднее',
+            fullExplanation: `
+                <p><strong>Puell Multiple</strong> измеряет доход майнеров относительно годового среднего.</p>
+                <p><strong>Как читать:</strong></p>
+                <p>\u2022 <span class="highlight">Puell < 0.5</span> \u2014 майнеры в минусе = дно рынка</p>
+                <p>\u2022 Puell 0.5-1.5 \u2014 нормальный уровень</p>
+                <p>\u2022 <span class="warning">Puell > 4.0</span> \u2014 предшествует коррекции</p>
+            `,
+            historicalEvents: [
+                { date: 'Декабрь 2018', event: 'Puell 0.31 \u2192 начало бычьего рынка' },
+                { date: 'Март 2020', event: 'Puell 0.38 \u2192 дно COVID-краха' },
+                { date: 'Апрель 2021', event: 'Puell 5.2 \u2192 локальная вершина $64K' }
+            ]
+        },
+        stock_to_flow: {
+            name: 'Stock-to-Flow', icon: '\ud83d\udcc8', category: 'onchain',
+            shortDesc: 'Модель дефицита',
+            fullExplanation: `
+                <p><strong>Stock-to-Flow</strong> \u2014 модель оценки BTC на основе его дефицитности.</p>
+                <p>S2F = Текущий запас / Годовая добыча. После каждого халвинга S2F удваивается.</p>
+                <p><strong>Модельная цена</strong> показывает "справедливую" стоимость по этой модели.</p>
+            `,
+            historicalEvents: [
+                { date: '2012 халвинг', event: 'S2F: 25 \u2192 цена выросла в 100x' },
+                { date: '2016 халвинг', event: 'S2F: 50 \u2192 цена выросла в 30x' },
+                { date: '2020 халвинг', event: 'S2F: 56 \u2192 цена выросла в 8x' }
+            ]
+        },
+        difficulty_ribbon: {
+            name: 'Difficulty Ribbon', icon: '\ud83c\udf97\ufe0f', category: 'onchain',
+            shortDesc: 'Капитуляция майнеров',
+            fullExplanation: `
+                <p><strong>Difficulty Ribbon</strong> отслеживает сложность майнинга.</p>
+                <p>\ud83d\udfe2 <strong>Сжатие ленты</strong> = капитуляция майнеров = исторически сильный сигнал на покупку!</p>
+            `,
+            historicalEvents: [
+                { date: 'Декабрь 2018', event: 'Сжатие \u2192 дно $3.2K' },
+                { date: 'Март 2020', event: 'Сжатие \u2192 дно $5K' },
+                { date: 'Июль 2022', event: 'Сжатие \u2192 дно $17K' }
+            ]
+        },
+        hash_rate: {
+            name: 'Hash Rate', icon: '\u26a1', category: 'onchain',
+            shortDesc: 'Вычислительная мощность сети',
+            fullExplanation: `
+                <p><strong>Hash Rate</strong> \u2014 общая вычислительная мощность сети Bitcoin.</p>
+                <p>Растущий хешрейт = майнеры уверены в будущем BTC.</p>
+            `,
+            historicalEvents: [
+                { date: 'Май 2021', event: 'Запрет в Китае: -50% хешрейт' },
+                { date: '2023-2024', event: 'Рост до 600+ EH/s' }
+            ]
+        },
+        fear_greed: {
+            name: 'Fear & Greed', icon: '\ud83d\ude31', category: 'technical',
+            shortDesc: 'Индекс настроения рынка',
+            fullExplanation: `
+                <p><strong>Fear & Greed Index</strong> измеряет эмоции рынка от 0 до 100.</p>
+                <p>\u2022 <span class="highlight">0-25: Extreme Fear</span> \u2014 лучшее время покупать!</p>
+                <p>\u2022 25-45: Fear \u2014 хорошие возможности</p>
+                <p>\u2022 45-55: Neutral</p>
+                <p>\u2022 55-75: Greed \u2014 осторожность</p>
+                <p>\u2022 <span class="warning">75-100: Extreme Greed</span> \u2014 фиксация прибыли</p>
+            `,
+            historicalEvents: [
+                { date: 'Март 2020', event: 'Fear = 8 \u2192 идеальная точка входа' },
+                { date: 'Ноябрь 2021', event: 'Greed = 84 \u2192 вершина рынка' },
+                { date: 'Июнь 2022', event: 'Fear = 6 \u2192 дно медвежьего рынка' }
+            ]
+        },
+        rsi: {
+            name: 'RSI (14)', icon: '\ud83d\udcc9', category: 'technical',
+            shortDesc: 'Индекс относительной силы',
+            fullExplanation: `
+                <p><strong>RSI</strong> \u2014 индикатор перекупленности/перепроданности (0-100).</p>
+                <p>\u2022 <span class="highlight">RSI < 30</span> \u2014 перепродан, ожидай отскок</p>
+                <p>\u2022 RSI 30-70 \u2014 нейтральная зона</p>
+                <p>\u2022 <span class="warning">RSI > 70</span> \u2014 перекуплен</p>
+            `,
+            historicalEvents: [
+                { date: 'Типичный паттерн', event: 'RSI < 20 = редкая возможность' }
+            ]
+        },
+        ma_200_position: {
+            name: 'vs MA200', icon: '\ud83d\udcca', category: 'technical',
+            shortDesc: 'Позиция относительно 200-дневной средней',
+            fullExplanation: `
+                <p><strong>MA200</strong> \u2014 200-дневная скользящая средняя.</p>
+                <p>\u2022 <span class="highlight">Ниже -20%</span> \u2014 сильно недооценён</p>
+                <p>\u2022 -20% до +20% \u2014 справедливая стоимость</p>
+                <p>\u2022 <span class="warning">Выше +50%</span> \u2014 переоценён</p>
+            `,
+            historicalEvents: [
+                { date: 'Ноябрь 2022', event: '-35% ниже MA200 \u2192 дно рынка' },
+                { date: 'Ноябрь 2021', event: '+70% выше MA200 \u2192 вершина' }
+            ]
+        },
+        dxy: {
+            name: 'DXY (Доллар)', icon: '\ud83d\udcb5', category: 'macro',
+            shortDesc: 'Индекс силы доллара США',
+            fullExplanation: `
+                <p><strong>DXY</strong> измеряет силу доллара против 6 валют.</p>
+                <p>\u2022 <span class="highlight">DXY падает</span> = BTC растёт</p>
+                <p>\u2022 <span class="warning">DXY растёт</span> = давление на BTC</p>
+            `,
+            historicalEvents: [
+                { date: '2020-2021', event: 'DXY 103\u219289 \u2192 BTC $10K\u2192$64K' },
+                { date: '2022', event: 'DXY\u2192114 \u2192 BTC\u2192$16K' }
+            ]
+        },
+        sp500: {
+            name: 'S&P 500', icon: '\ud83c\udfdb\ufe0f', category: 'macro',
+            shortDesc: 'Фондовый рынок США',
+            fullExplanation: `
+                <p><strong>S&P 500</strong> \u2014 индекс 500 крупнейших компаний США.</p>
+                <p>BTC коррелирует с фондовым рынком как "рисковый актив".</p>
+            `,
+            historicalEvents: [
+                { date: 'Март 2020', event: 'S&P -34% \u2192 BTC -50%' },
+                { date: '2023', event: 'S&P +24% \u2192 BTC +155%' }
+            ]
+        },
+        halving_cycle: {
+            name: 'Halving Cycle', icon: '\ud83d\udd04', category: 'cycle',
+            shortDesc: 'Позиция в 4-летнем цикле',
+            fullExplanation: `
+                <p>Каждые ~4 года награда майнерам уменьшается вдвое.</p>
+                <p>\u2022 <span class="highlight">0-30%</span> \u2014 накопление (лучшее время покупать!)</p>
+                <p>\u2022 30-60% \u2014 бычий рост</p>
+                <p>\u2022 60-85% \u2014 эйфория и пик</p>
+                <p>\u2022 <span class="warning">85-100%</span> \u2014 медвежий рынок</p>
+            `,
+            historicalEvents: [
+                { date: '2020 халвинг', event: 'ATH через 18 месяцев (+700%)' },
+                { date: '2024 халвинг', event: 'Апрель 2024 \u2014 текущий цикл' }
+            ]
+        },
+        btc_dominance: {
+            name: 'BTC Dominance', icon: '\ud83d\udc51', category: 'cycle',
+            shortDesc: 'Доля BTC на крипторынке',
+            fullExplanation: `
+                <p><strong>BTC Dominance</strong> \u2014 доля Bitcoin в общей капитализации.</p>
+                <p>\u2022 <span class="highlight">Высокая (>55%)</span> \u2014 начало цикла</p>
+                <p>\u2022 <span class="warning">Низкая (<40%)</span> \u2014 альтсезон, часто вершина</p>
+            `,
+            historicalEvents: [
+                { date: 'Январь 2018', event: 'Доминация 33% \u2192 крах альткоинов' },
+                { date: 'Ноябрь 2020', event: 'Доминация 70% \u2192 бычий рынок' }
+            ]
+        },
+        funding_rate: {
+            name: 'Funding Rate', icon: '\ud83d\udcb0', category: 'derivatives',
+            shortDesc: 'Ставка финансирования фьючерсов',
+            fullExplanation: `
+                <p>Периодические платежи между лонгами и шортами.</p>
+                <p>\u2022 <span class="warning">Положительный</span> \u2014 много лонгов = bearish</p>
+                <p>\u2022 <span class="highlight">Отрицательный</span> \u2014 много шортов = bullish</p>
+            `,
+            historicalEvents: [
+                { date: 'Апрель 2021', event: 'Funding 0.3% \u2192 коррекция -55%' },
+                { date: 'Июнь 2022', event: 'Funding -0.2% \u2192 squeeze +40%' }
+            ]
+        },
+        long_short_ratio: {
+            name: 'Long/Short Ratio', icon: '\u2696\ufe0f', category: 'derivatives',
+            shortDesc: 'Соотношение позиций трейдеров',
+            fullExplanation: `
+                <p>Показывает соотношение длинных и коротких позиций.</p>
+                <p>\u2022 <span class="warning">Ratio > 2</span> \u2014 много лонгов, риск ликвидации</p>
+                <p>\u2022 <span class="highlight">Ratio < 0.5</span> \u2014 много шортов, возможен squeeze</p>
+            `,
+            historicalEvents: [
+                { date: 'Типичный', event: 'Экстремальный перекос \u2192 движение в обратную сторону' }
+            ]
+        },
+        open_interest: {
+            name: 'Open Interest', icon: '\ud83d\udccb', category: 'derivatives',
+            shortDesc: 'Объём открытых позиций',
+            fullExplanation: `
+                <p>Общий объём открытых фьючерсных контрактов.</p>
+                <p>\u2022 Рост OI + рост цены = здоровый тренд</p>
+                <p>\u2022 <span class="warning">Экстремально высокий OI</span> = риск каскадных ликвидаций</p>
+            `,
+            historicalEvents: [
+                { date: 'Апрель 2021', event: 'OI ATH \u2192 ликвидации, -55%' },
+                { date: 'Ноябрь 2022', event: 'Крах FTX обнулил OI \u2192 дно' }
+            ]
+        }
+    };
+
+    // ─── Insights generator ───
+    function generateInsights(indicators) {
+        const insights = [];
+        const fg = indicators.fear_greed?.value;
+        const rsi = parseFloat(indicators.rsi?.value);
+        const mvrv = parseFloat(indicators.mvrv_approx?.value);
+        const buyScore = indicators.buy_score?.value;
+
+        if (fg <= 20 && rsi <= 30) {
+            insights.push({ type: 'bullish', title: '\ud83d\udea8 Экстремальный страх + Перепроданность!',
+                text: `Fear & Greed (${fg}) и RSI (${rsi}) в экстремальных зонах. Исторически редкая возможность для покупки.` });
+        }
+        if (mvrv && mvrv < 1) {
+            insights.push({ type: 'bullish', title: '\ud83d\udc8e MVRV ниже 1 \u2014 редкость!',
+                text: `MVRV=${mvrv}x означает, что цена ниже средней стоимости покупки всех холдеров. За последние 10 лет это происходило только 3-4 раза и всегда было дном.` });
+        }
+        if (indicators.difficulty_ribbon?.compression) {
+            insights.push({ type: 'bullish', title: '\u26cf\ufe0f Капитуляция майнеров',
+                text: 'Difficulty Ribbon показывает сжатие. Исторически это совпадало с рыночным дном.' });
+        }
+        const dxyChange = parseFloat(indicators.dxy?.weekChange);
+        if (dxyChange && dxyChange < -1) {
+            insights.push({ type: 'bullish', title: '\ud83d\udcb5 Доллар слабеет',
+                text: `DXY упал на ${dxyChange}% за неделю. Слабый доллар исторически хорош для Bitcoin.` });
+        }
+        const halvingPos = parseInt(indicators.halving_cycle?.value);
+        if (halvingPos && halvingPos <= 50) {
+            insights.push({ type: 'bullish', title: '\ud83d\udd04 Благоприятная фаза цикла',
+                text: `Мы на ${halvingPos}% пути в текущем халвинг-цикле. Первая половина цикла исторически лучшее время для накопления.` });
+        }
+        if (fg >= 75 && rsi >= 70) {
+            insights.push({ type: 'bearish', title: '\u26a0\ufe0f Рынок перегрет!',
+                text: `Fear & Greed (${fg}) и RSI (${rsi}) в зонах жадности. Рассмотри частичную фиксацию.` });
+        }
+        if (insights.length === 0) {
+            insights.push({ type: 'neutral', title: '\ud83d\udcca Рынок в нейтральной зоне',
+                text: `Buy Score ${buyScore}%. Нет экстремальных сигналов \u2014 держи позицию.` });
+        }
+        return insights;
+    }
+
+    // ─── Modal ───
+    function openModal(key) {
+        const config = indicatorConfig[key];
+        const data = globalIndicators[key];
+        if (!config || !data) return;
+
+        const signalClass = signalToClass(data.signal);
+        document.getElementById('modalIcon').textContent = config.icon;
+        document.getElementById('modalIcon').className = `modal-icon indicator-circle ${signalClass}`;
+        document.getElementById('modalTitle').textContent = config.name;
+        document.getElementById('modalSubtitle').textContent = config.shortDesc;
+
+        let historyHtml = '';
+        if (config.historicalEvents) {
+            historyHtml = config.historicalEvents.map(e =>
+                `<div class="history-item"><span class="history-date">${e.date}</span><span class="history-event">${e.event}</span></div>`
+            ).join('');
+        }
+
+        document.getElementById('modalBody').innerHTML = `
+            <div class="modal-section">
+                <div class="modal-section-title">Текущее значение</div>
+                <div class="current-value-box">
+                    <div class="current-value-main">${data.label || data.value}</div>
+                    <div class="current-signal-badge ${signalClass}">${signalToText(data.signal)}</div>
+                </div>
+            </div>
+            <div class="modal-section">
+                <div class="modal-section-title">Что это значит?</div>
+                <div class="explanation-box">${config.fullExplanation}</div>
+            </div>
+            ${historyHtml ? `
+            <div class="modal-section">
+                <div class="modal-section-title">Исторические примеры</div>
+                <div class="history-box">${historyHtml}</div>
+            </div>` : ''}
+        `;
+        document.getElementById('modalOverlay').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        document.getElementById('modalOverlay').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    document.getElementById('modalOverlay').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('modalOverlay')) closeModal();
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+    // ─── Render indicator card ───
+    function renderIndicatorCard(key, ind, highlight = false) {
+        const config = indicatorConfig[key];
+        if (!config || !ind) return '';
+        const signalClass = signalToClass(ind.signal);
+        return `<div class="indicator-card${highlight ? ' highlight' : ''}" onclick="openModal('${key}')">
+            <div class="indicator-circle ${signalClass}">${config.icon}</div>
+            <div class="indicator-info">
+                <div class="indicator-name">${config.name}</div>
+                <div class="indicator-value">${ind.label || ind.value}</div>
+                <div class="indicator-signal ${signalClass}">${signalToText(ind.signal)}</div>
+            </div>
+        </div>`;
+    }
+
+    // ─── Load all data ───
+    async function loadData() {
+        try {
+            const res = await fetch(API_BASE + '/all');
+            const data = await res.json();
+            globalIndicators = data.indicators;
+
+            // Price
+            document.getElementById('btcPrice').textContent = formatUSD(data.price.current);
+            document.getElementById('volume24h').textContent = formatBillion(data.price.volume_24h);
+            document.getElementById('marketCap').textContent = formatBillion(data.price.market_cap);
+
+            // Portfolio
+            document.getElementById('portfolioValue').textContent = formatUSD(data.portfolio.current_value);
+            document.getElementById('portfolioBtc').textContent = data.portfolio.btc_amount + ' BTC';
+            document.getElementById('portfolioAvg').textContent = formatUSD(data.portfolio.avg_price);
+            document.getElementById('portfolioInvested').textContent = formatUSD(data.portfolio.invested);
+
+            const pnlEl = document.getElementById('portfolioPnl');
+            const isPos = data.portfolio.pnl_usd >= 0;
+            pnlEl.textContent = (isPos ? '+' : '') + formatUSD(data.portfolio.pnl_usd) + ' (' + formatPercent(data.portfolio.pnl_percent) + ')';
+            pnlEl.className = 'portfolio-pnl ' + (isPos ? 'positive' : 'negative');
+
+            // Buy Score
+            const buyScore = data.indicators.buy_score;
+            if (buyScore) {
+                const score = buyScore.value;
+                const color = getScoreColor(score);
+                document.getElementById('scoreValue').textContent = score + '%';
+                document.getElementById('scoreValue').style.color = color;
+                document.getElementById('scoreLabel').textContent = signalToText(buyScore.signal).toUpperCase();
+                document.getElementById('scoreLabel').style.color = color;
+                document.getElementById('scorePointer').style.left = score + '%';
+            }
+
+            // Insights
+            const insights = generateInsights(data.indicators);
+            document.getElementById('insightsList').innerHTML = insights.map(i =>
+                `<div class="insight-item ${i.type}">
+                    <div class="insight-header">${i.title}</div>
+                    <div class="insight-text">${i.text}</div>
+                </div>`
+            ).join('');
+
+            // Render indicators by category
+            let onchain = '', technical = '', macro = '', cycle = '', derivatives = '';
+            for (const [key, config] of Object.entries(indicatorConfig)) {
+                const ind = data.indicators[key];
+                if (!ind) continue;
+                const hl = ['mvrv_approx', 'puell_multiple', 'halving_cycle', 'dxy', 'sp500'].includes(key);
+                const card = renderIndicatorCard(key, ind, hl);
+                switch (config.category) {
+                    case 'onchain': onchain += card; break;
+                    case 'technical': technical += card; break;
+                    case 'macro': macro += card; break;
+                    case 'cycle': cycle += card; break;
+                    case 'derivatives': derivatives += card; break;
+                }
+            }
+            document.getElementById('onchainGrid').innerHTML = onchain || '<div style="color:var(--text-secondary)">Загрузка...</div>';
+            document.getElementById('technicalGrid').innerHTML = technical || '<div style="color:var(--text-secondary)">Загрузка...</div>';
+            document.getElementById('macroGrid').innerHTML = macro || '<div style="color:var(--text-secondary)">Загрузка...</div>';
+            document.getElementById('cycleGrid').innerHTML = cycle || '<div style="color:var(--text-secondary)">Загрузка...</div>';
+            document.getElementById('derivativesGrid').innerHTML = derivatives || '<div style="color:var(--text-secondary)">Загрузка...</div>';
+
+            // Update time
+            document.getElementById('updateTime').textContent = new Date(data.updated_at).toLocaleString('ru-RU');
+        } catch (err) {
+            console.error('Load error:', err);
+        }
+    }
+
+    // ─── Price chart ───
+    async function loadPriceChart(days) {
+        try {
+            const res = await fetch(API_BASE + '/historical?days=' + days);
+            const data = await res.json();
+            const ctx = document.getElementById('priceChart').getContext('2d');
+
+            if (!data.data || data.data.length === 0) {
+                if (priceChart) priceChart.destroy();
+                ctx.fillStyle = '#8a8a9a';
+                ctx.font = '16px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('Нет данных', ctx.canvas.width / 2, ctx.canvas.height / 2);
+                return;
+            }
+
+            const labels = data.data.map(d => {
+                const date = new Date(d.date);
+                return date.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' });
+            });
+            const prices = data.data.map(d => d.price);
+            const buyScores = data.data.map(d => d.buy_score);
+            const colors = buyScores.map(score => getScoreColor(score));
+
+            if (priceChart) priceChart.destroy();
+            priceChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Цена BTC',
+                        data: prices,
+                        backgroundColor: colors,
+                        borderColor: colors,
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => {
+                                    const idx = ctx.dataIndex;
+                                    const d = data.data[idx];
+                                    return [
+                                        'Цена: $' + Math.round(d.price).toLocaleString(),
+                                        'Buy Score: ' + d.buy_score + '%',
+                                        'Fear&Greed: ' + (d.fear_greed || 'N/A')
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#8a8a9a', maxRotation: 45 }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#8a8a9a', callback: (v) => '$' + (v/1000).toFixed(0) + 'k' }
+                        }
+                    }
+                }
+            });
+        } catch (err) {
+            console.error('Chart error:', err);
+        }
+    }
+
+    // Chart tab clicks
+    document.querySelectorAll('.chart-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            currentDays = parseInt(tab.dataset.days);
+            loadPriceChart(currentDays);
+        });
+    });
+
+    // ─── Init ───
+    async function init() {
+        await loadData();
+        await loadPriceChart(30);
+        setInterval(loadData, 60000); // refresh every minute
+    }
+    init();
+    </script>
+</body>
+</html>
