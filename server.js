@@ -65,20 +65,40 @@ async function safeFetch(url, timeout = 10000) {
     }
 }
 
-// ─── Data Fetchers ───
+// ─── Data Fetchers (with fallback chains: Binance → CoinCap → CoinGecko) ───
 
 async function fetchBtcPrice() {
-    const data = await safeFetch(
-        'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_vol=true&include_market_cap=true&include_24hr_change=true'
-    );
-    if (data && data.bitcoin) {
+    // Primary: Binance (no rate limits from cloud)
+    const binance = await safeFetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT');
+    if (binance && binance.lastPrice) {
+        const price = parseFloat(binance.lastPrice);
+        const vol = parseFloat(binance.quoteVolume || 0);
+        const change = parseFloat(binance.priceChangePercent || 0);
+        // Get market cap from CoinCap (also cloud-friendly)
+        const coincap = await safeFetch('https://api.coincap.io/v2/assets/bitcoin');
+        const mcap = coincap?.data?.marketCapUsd ? parseFloat(coincap.data.marketCapUsd) : price * 19820000;
+        console.log(`  [Price] Binance: $${price.toLocaleString()}`);
+        return { current: price, volume_24h: vol, market_cap: mcap, change_24h: change };
+    }
+    // Fallback: CoinCap
+    const coincap = await safeFetch('https://api.coincap.io/v2/assets/bitcoin');
+    if (coincap && coincap.data) {
+        const d = coincap.data;
+        console.log(`  [Price] CoinCap fallback: $${parseFloat(d.priceUsd).toFixed(0)}`);
         return {
-            current: data.bitcoin.usd || 0,
-            volume_24h: data.bitcoin.usd_24h_vol || 0,
-            market_cap: data.bitcoin.usd_market_cap || 0,
-            change_24h: data.bitcoin.usd_24h_change || 0
+            current: parseFloat(d.priceUsd) || 0,
+            volume_24h: parseFloat(d.volumeUsd24Hr) || 0,
+            market_cap: parseFloat(d.marketCapUsd) || 0,
+            change_24h: parseFloat(d.changePercent24Hr) || 0
         };
     }
+    // Fallback 2: CoinGecko
+    const cg = await safeFetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_vol=true&include_market_cap=true&include_24hr_change=true');
+    if (cg && cg.bitcoin) {
+        console.log(`  [Price] CoinGecko fallback: $${cg.bitcoin.usd}`);
+        return { current: cg.bitcoin.usd || 0, volume_24h: cg.bitcoin.usd_24h_vol || 0, market_cap: cg.bitcoin.usd_market_cap || 0, change_24h: cg.bitcoin.usd_24h_change || 0 };
+    }
+    console.error('  [Price] ALL SOURCES FAILED');
     return { current: 0, volume_24h: 0, market_cap: 0, change_24h: 0 };
 }
 
@@ -94,9 +114,22 @@ async function fetchFearGreed() {
 }
 
 async function fetchMarketData() {
-    const data = await safeFetch(
-        'https://api.coingecko.com/api/v3/coins/bitcoin?localization=false&tickers=false&community_data=false&developer_data=false'
-    );
+    // Primary: CoinCap (cloud-friendly, no rate limits)
+    const coincap = await safeFetch('https://api.coincap.io/v2/assets/bitcoin');
+    if (coincap && coincap.data) {
+        const d = coincap.data;
+        return {
+            ath: 109000, // CoinCap doesn't provide ATH, use known value
+            ath_change: 0,
+            current_price: parseFloat(d.priceUsd) || 0,
+            price_change_7d: 0,
+            price_change_30d: 0,
+            circulating_supply: parseFloat(d.supply) || 19820000,
+            total_supply: parseFloat(d.maxSupply) || 21000000
+        };
+    }
+    // Fallback: CoinGecko
+    const data = await safeFetch('https://api.coingecko.com/api/v3/coins/bitcoin?localization=false&tickers=false&community_data=false&developer_data=false');
     if (data && data.market_data) {
         const md = data.market_data;
         return {
@@ -105,14 +138,33 @@ async function fetchMarketData() {
             current_price: md.current_price?.usd || 0,
             price_change_7d: md.price_change_percentage_7d || 0,
             price_change_30d: md.price_change_percentage_30d || 0,
-            circulating_supply: md.circulating_supply || 19700000,
+            circulating_supply: md.circulating_supply || 19820000,
             total_supply: md.total_supply || 21000000
         };
     }
-    return {};
+    return { circulating_supply: 19820000, total_supply: 21000000 };
 }
 
 async function fetchGlobalCrypto() {
+    // Primary: CoinCap
+    const coincap = await safeFetch('https://api.coincap.io/v2/assets/bitcoin');
+    if (coincap && coincap.data) {
+        const btcMcap = parseFloat(coincap.data.marketCapUsd) || 0;
+        // Get total market for dominance
+        const globalData = await safeFetch('https://api.coincap.io/v2/assets?limit=1');
+        // CoinCap doesn't give total easily, estimate dominance from known data
+        // or use CoinGecko as supplement
+        const cgGlobal = await safeFetch('https://api.coingecko.com/api/v3/global');
+        if (cgGlobal && cgGlobal.data) {
+            return {
+                btc_dominance: cgGlobal.data.market_cap_percentage?.btc || 55,
+                total_market_cap: cgGlobal.data.total_market_cap?.usd || 0
+            };
+        }
+        // Fallback: estimate dominance ~56%
+        return { btc_dominance: 56, total_market_cap: btcMcap / 0.56 };
+    }
+    // Fallback: CoinGecko
     const data = await safeFetch('https://api.coingecko.com/api/v3/global');
     if (data && data.data) {
         return {
@@ -167,7 +219,29 @@ async function fetchHistoricalPrices() {
     if (historicalPrices.prices.length > 0 && (now - historicalPrices.lastFetch) < 1800000) {
         return historicalPrices.prices;
     }
-    // CoinGecko free: 365 days of daily prices
+    // Primary: Binance klines (365 days, 1d interval, no rate limit issues)
+    try {
+        const prices = [];
+        // Binance max 1000 candles per request, we need 365
+        const endTime = Date.now();
+        const startTime = endTime - 365 * 24 * 60 * 60 * 1000;
+        const data = await safeFetch(
+            `https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&startTime=${startTime}&endTime=${endTime}&limit=365`,
+            15000
+        );
+        if (data && Array.isArray(data) && data.length > 10) {
+            for (const candle of data) {
+                prices.push(parseFloat(candle[4])); // close price
+            }
+            historicalPrices.prices = prices;
+            historicalPrices.lastFetch = now;
+            console.log(`  [Historical] Binance: ${prices.length} daily prices loaded`);
+            return historicalPrices.prices;
+        }
+    } catch (e) {
+        console.error('  [Historical] Binance failed:', e.message);
+    }
+    // Fallback: CoinGecko
     const data = await safeFetch(
         'https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=365&interval=daily',
         15000
@@ -175,7 +249,7 @@ async function fetchHistoricalPrices() {
     if (data && data.prices && data.prices.length > 10) {
         historicalPrices.prices = data.prices.map(([ts, price]) => price);
         historicalPrices.lastFetch = now;
-        console.log(`  Loaded ${historicalPrices.prices.length} historical prices`);
+        console.log(`  [Historical] CoinGecko fallback: ${historicalPrices.prices.length} prices`);
     }
     return historicalPrices.prices;
 }
@@ -449,13 +523,8 @@ async function fetchAllDataLocal() {
 }
 
 async function fetchHistorical(days = 30) {
-    const [priceData, fgData] = await Promise.all([
-        safeFetch(`https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=${days}&interval=daily`),
-        safeFetch(`https://api.alternative.me/fng/?limit=${days}`)
-    ]);
-
-    if (!priceData || !priceData.prices) return [];
-
+    // Fetch Fear & Greed data
+    const fgData = await safeFetch(`https://api.alternative.me/fng/?limit=${days}`);
     const fgMap = {};
     if (fgData && fgData.data) {
         for (const item of fgData.data) {
@@ -463,6 +532,34 @@ async function fetchHistorical(days = 30) {
             fgMap[date.toISOString().split('T')[0]] = parseInt(item.value);
         }
     }
+
+    // Primary: Binance klines
+    try {
+        const endTime = Date.now();
+        const startTime = endTime - days * 24 * 60 * 60 * 1000;
+        const klines = await safeFetch(
+            `https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&startTime=${startTime}&endTime=${endTime}&limit=${days}`,
+            15000
+        );
+        if (klines && Array.isArray(klines) && klines.length > 0) {
+            return klines.map(candle => {
+                const date = new Date(candle[0]);
+                const dateStr = date.toISOString().split('T')[0];
+                const fg = fgMap[dateStr] || 50;
+                return {
+                    date: dateStr,
+                    price: Math.round(parseFloat(candle[4])),
+                    buy_score: Math.max(0, Math.min(100, 50 + (50 - fg))),
+                    fear_greed: fg,
+                    rsi: null
+                };
+            });
+        }
+    } catch (e) { /* fallback below */ }
+
+    // Fallback: CoinGecko
+    const priceData = await safeFetch(`https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=${days}&interval=daily`);
+    if (!priceData || !priceData.prices) return [];
 
     return priceData.prices.map(([ts, price]) => {
         const date = new Date(ts);
