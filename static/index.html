@@ -398,10 +398,6 @@
                 <h3>&#127968; ELLINGTON</h3>
                 <table><thead><tr><th>PROJECT</th><th class="align-right">FACT ($)</th><th class="align-right">DEBT ($)</th><th class="align-right">TOTAL ($)</th></tr></thead><tbody id="propTable"></tbody></table>
             </div>
-            <div class="table-card">
-                <h3>&#128640; Потенциальные проекты</h3>
-                <table><thead><tr><th>PROJECT</th><th class="align-right">DEBT ($)</th><th class="align-right">TOTAL ($)</th></tr></thead><tbody id="potentialTable"></tbody></table>
-            </div>
         </div>
     </div>
 
@@ -614,9 +610,7 @@
     function renderPropertyTab() {
         const kh = '<div class="kpi-card kpi-highlight"><div class="kpi-label">Ellington Total</div><div class="kpi-value">'+fU(PROP_FACT+PROP_DEBT)+'</div></div>'
             + '<div class="kpi-card"><div class="kpi-label">Fact</div><div class="kpi-value">'+fU(PROP_FACT)+'</div></div>'
-            + '<div class="kpi-card"><div class="kpi-label">Debt</div><div class="kpi-value" style="color:var(--accent-red)">'+fU(PROP_DEBT)+'</div></div>'
-            + '<div class="kpi-card"><div class="kpi-label">Potential</div><div class="kpi-value" style="color:var(--accent-yellow)">'+fU(POT_TOTAL)+'</div></div>'
-            + '<div class="kpi-card kpi-highlight"><div class="kpi-label">Grand Total</div><div class="kpi-value">'+fU(GRAND_TOTAL)+'</div></div>';
+            + '<div class="kpi-card"><div class="kpi-label">Debt</div><div class="kpi-value" style="color:var(--accent-red)">'+fU(PROP_DEBT)+'</div></div>';
         document.getElementById("propKpi").innerHTML = kh;
         const factProps = PROP.filter(p => p.fact > 0);
         mkDoughnut("propDoughnut", factProps.map(p => p.name), factProps.map(p => p.fact), factProps.map(p => p.color), PROP_FACT);
@@ -628,12 +622,6 @@
         }
         h += '<tr class="total-row"><td>Ellington TOTAL</td><td class="align-right">'+fU(PROP_FACT)+'</td><td class="align-right">'+fU(PROP_DEBT)+'</td><td class="align-right">'+fU(PROP_FACT+PROP_DEBT)+'</td></tr>';
         document.getElementById("propTable").innerHTML = h;
-        let ph = "";
-        for (let r of POTENTIAL) {
-            ph += '<tr><td>'+r.name+'</td><td class="align-right">'+fU(r.debt)+'</td><td class="align-right">'+fU(r.debt)+'</td></tr>';
-        }
-        ph += '<tr class="total-row"><td>TOTAL потенциальные проекты</td><td class="align-right">'+fU(POT_TOTAL)+'</td><td class="align-right">'+fU(POT_TOTAL)+'</td></tr>';
-        document.getElementById("potentialTable").innerHTML = ph;
     }
 
     // ================================================================
