@@ -87,6 +87,9 @@
         .pct-bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
         .total-row { font-weight: 700; }
         .total-row td { border-top: 2px solid var(--border); border-bottom: none; }
+        .sub-row td { color: var(--text-secondary); font-size: 13px; padding-left: 28px !important; }
+        .sub-row td:first-child { padding-left: 32px !important; }
+        .sub-row { border-bottom: none !important; }
 
         /* ===== CRYPTO TAB STYLES ===== */
         .price-hero {
@@ -426,7 +429,10 @@
         FAB: { Depo: 73311399, bonds: 82722275, stocks: 7024490 },
         ENBD: { Depo: 34961949 },
         Exante: { stocks: 30386773 },
-        ACM: { stocks: 21940557, bonds: 2600000 },
+        ACM: { stocks: 21940557, bonds: 2600000, stocksBreakdown: [
+            { name: "стратегии", value: 20500000 },
+            { name: "Venture Capital Funds (from Aton)", value: 1440557 }
+        ]},
         IsBank: { Depo: 900000 }
     };
 
@@ -604,7 +610,22 @@
         pKpi("stocksKpi", "Stocks total", stocksP, tStocks, getPortfolioTotal());
         mkDoughnut("stocksDoughnut", Object.keys(stocksP), Object.values(stocksP), ["#bc8cff", "#f7931a", "#ff4757"], tStocks);
         mkBar("stocksBar", Object.keys(stocksP), Object.values(stocksP), ["#bc8cff", "#f7931a", "#ff4757"]);
-        pTable("stocksTable", stocksP, tStocks, "#bc8cff");
+        // Custom table with ACM sub-breakdown
+        const ks = Object.keys(stocksP);
+        const colors = ["#bc8cff", "#f7931a", "#ff4757"];
+        let h = "";
+        for (let i = 0; i < ks.length; i++) {
+            const k = ks[i], v = stocksP[k], p = v / tStocks * 100, c = colors[i % colors.length];
+            h += '<tr><td><div class="asset-name"><span class="color-dot" style="background:'+c+'"></span>'+k+'</div></td><td class="align-right">'+fU(v)+'</td><td class="align-right">'+p.toFixed(1)+'%</td><td class="pct-bar-cell"><div class="pct-bar-bg"><div class="pct-bar-fill" style="width:'+p+'%;background:'+c+'"></div></div></td></tr>';
+            if (DATA[k] && DATA[k].stocksBreakdown) {
+                for (let sub of DATA[k].stocksBreakdown) {
+                    const sp = sub.value / tStocks * 100;
+                    h += '<tr class="sub-row"><td>↳ '+sub.name+'</td><td class="align-right">'+fU(sub.value)+'</td><td class="align-right">'+sp.toFixed(1)+'%</td><td></td></tr>';
+                }
+            }
+        }
+        h += '<tr class="total-row"><td>TOTAL</td><td class="align-right">'+fU(tStocks)+'</td><td class="align-right">100%</td><td></td></tr>';
+        document.getElementById("stocksTable").innerHTML = h;
     }
 
     function renderPropertyTab() {
