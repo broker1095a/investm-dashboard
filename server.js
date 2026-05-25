@@ -1,6 +1,6 @@
 /**
  * BTC Dashboard v3.5 — Node.js Backend
- * Portfolio: 876 BTC bought at $63,744 average
+ * Portfolio: 615 BTC bought at $58,297 average
  * Auto-updates from CoinGecko, Alternative.me, Binance APIs
  */
 
@@ -15,9 +15,9 @@ app.use(cors());
 app.use(express.static(path.join(__dirname, 'static')));
 
 // ─── Portfolio Config ───
-const PORTFOLIO_BTC = 876;
-const PORTFOLIO_AVG_PRICE = 63744;
-const PORTFOLIO_INVESTED = PORTFOLIO_BTC * PORTFOLIO_AVG_PRICE; // $55,799,424
+const PORTFOLIO_BTC = 615;
+const PORTFOLIO_AVG_PRICE = 58297;
+const PORTFOLIO_INVESTED = 35871562; // фактически вложено
 
 // ─── Cache ───
 let cache = {
