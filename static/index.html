@@ -321,9 +321,9 @@
                     <div class="value" id="portfolioValue">$0</div>
                     <div class="portfolio-pnl positive" id="portfolioPnl">+$0 (+0%)</div>
                     <div class="portfolio-details">
-                        Количество: <span id="portfolioBtc">982 BTC</span><br>
-                        Средняя цена: <span id="portfolioAvg">$65,188</span><br>
-                        Инвестировано: <span id="portfolioInvested">$64,014,616</span>
+                        Количество: <span id="portfolioBtc">615 BTC</span><br>
+                        Средняя цена: <span id="portfolioAvg">$58,297</span><br>
+                        Инвестировано: <span id="portfolioInvested">$35,871,562</span>
                     </div>
                 </div>
             </section>
@@ -1019,7 +1019,21 @@
     async function init() {
         // Render portfolio tab first (default tab)
         tabRendered['portfolio'] = true;
-        await loadData(); // this also updates tCrypto and re-renders portfolio
+
+        // Load with retry (Render free tier may need time to wake up)
+        let loaded = false;
+        for (let attempt = 1; attempt <= 5; attempt++) {
+            try {
+                await loadData();
+                loaded = true;
+                break;
+            } catch(e) {
+                console.warn(`[Init] Attempt ${attempt} failed, retrying in 5s...`);
+                await new Promise(r => setTimeout(r, 5000));
+            }
+        }
+        if (!loaded) console.error('[Init] All attempts failed');
+
         loadPriceChart(30); // load chart in background (for when user clicks Crypto)
         setInterval(loadData, 60000);
         // Update header clock
