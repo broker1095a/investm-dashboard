@@ -90,6 +90,28 @@
         .sub-row td { color: var(--text-secondary); font-size: 13px; padding-left: 28px !important; }
         .sub-row td:first-child { padding-left: 32px !important; }
         .sub-row { border-bottom: none !important; }
+        /* Bond analytics tables */
+        .bond-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .bond-table th { background: var(--bg-secondary); color: var(--text-secondary); font-weight: 600; padding: 8px 10px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--border); }
+        .bond-table th:first-child { text-align: left; }
+        .bond-table td { padding: 7px 10px; text-align: right; border-bottom: 1px solid rgba(42,42,58,0.5); white-space: nowrap; }
+        .bond-table td:first-child { text-align: left; color: var(--text-primary); max-width: 280px; white-space: normal; line-height: 1.3; }
+        .bond-table tr:hover td { background: rgba(74,158,255,0.04); }
+        .bond-table .total-row td { font-weight: 700; border-top: 2px solid var(--border); background: var(--bg-secondary); }
+        .bond-table .ytm-pos { color: var(--accent-green); }
+        .bond-table .ytm-neg { color: var(--accent-red); }
+        /* ACM analytics card */
+        .analytics-card { background: var(--bg-secondary); border-radius: 12px; padding: 18px 22px; border: 1px solid var(--border); }
+        .analytics-card .acm-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(42,42,58,0.4); font-size: 13px; }
+        .analytics-card .acm-row:last-child { border-bottom: none; }
+        .analytics-card .acm-label { color: var(--text-secondary); }
+        .analytics-card .acm-value { color: var(--text-primary); font-weight: 500; }
+        /* Ellington repayment schedule */
+        .schedule-table { width: 100%; border-collapse: collapse; }
+        .schedule-table th { background: var(--bg-secondary); color: var(--text-secondary); font-size: 13px; padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+        .schedule-table th:last-child { text-align: right; }
+        .schedule-table td { padding: 8px 12px; border-bottom: 1px solid rgba(42,42,58,0.4); font-size: 13px; }
+        .schedule-table td:last-child { text-align: right; font-weight: 500; color: var(--accent-green); }
 
         /* ===== CRYPTO TAB STYLES ===== */
         .price-hero {
@@ -290,6 +312,24 @@
                 <h3>Детализация</h3>
                 <table><thead><tr><th>Partner</th><th class="align-right">Сумма ($)</th><th class="align-right">Доля</th><th class="pct-bar-cell"></th></tr></thead><tbody id="bondsTable"></tbody></table>
             </div>
+            <!-- FAB bond sub-portfolios -->
+            <div class="table-card">
+                <h3>&#128200; FAB_IY_Joseph &mdash; облигации <span style="color:var(--text-secondary);font-weight:400;font-size:13px">Mkt. Value 30.04.26</span></h3>
+                <table class="bond-table"><thead><tr><th>Название</th><th>Mkt. Value</th><th>Погашение</th><th>Купон %</th><th>Accr. Int. (4 мес.)</th><th>YTM</th></tr></thead><tbody id="fabJosephTable"></tbody></table>
+            </div>
+            <div class="table-card">
+                <h3>&#128200; FAB_IY_Oliver &mdash; облигации <span style="color:var(--text-secondary);font-weight:400;font-size:13px">Mkt. Value 30.04.26</span></h3>
+                <table class="bond-table"><thead><tr><th>Название</th><th>Mkt. Value</th><th>Погашение</th><th>Купон %</th><th>Accr. Int. (4 мес.)</th><th>YTM</th></tr></thead><tbody id="fabOliverTable"></tbody></table>
+            </div>
+            <div class="table-card">
+                <h3>&#128200; FAB_AK_Joseph &mdash; облигации <span style="color:var(--text-secondary);font-weight:400;font-size:13px">Mkt. Value 30.04.26</span></h3>
+                <table class="bond-table"><thead><tr><th>Название</th><th>Mkt. Value</th><th>Погашение</th><th>Купон %</th><th>Accr. Int. (4 мес.)</th><th>YTM</th></tr></thead><tbody id="fabAkJosephTable"></tbody></table>
+            </div>
+            <!-- ACM bond analytics -->
+            <div class="table-card">
+                <h3>&#128196; ACM &mdash; облигации ($2,600,000)</h3>
+                <div class="analytics-card" id="acmBondCard"></div>
+            </div>
         </div>
 
         <!-- ======= STOCKS TAB ======= -->
@@ -401,6 +441,13 @@
                 <h3>&#127968; ELLINGTON</h3>
                 <table><thead><tr><th>PROJECT</th><th class="align-right">FACT ($)</th><th class="align-right">DEBT ($)</th><th class="align-right">TOTAL ($)</th></tr></thead><tbody id="propTable"></tbody></table>
             </div>
+            <div class="table-card">
+                <h3>&#128197; График погашения &mdash; Investments with fixed income (Ellington, $30M)</h3>
+                <table class="schedule-table">
+                    <thead><tr><th>Дата</th><th>Описание</th><th>Сумма ($)</th></tr></thead>
+                    <tbody id="ellingtonScheduleTable"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -440,6 +487,74 @@
         "Exante (счет IY)": { stocks: 45000000 },
         IsBank: { Depo: 900000 }
     };
+
+    // ================================================================
+    // BOND ANALYTICS DATA
+    // ================================================================
+    const FAB_IY_JOSEPH = { total_mkt: 45695516, accr_int: 798242, bonds: [
+        { name: 'FAB MENA Plus FMP Series 1 USD',          mkt: 22922610, maturity: '15 Nov 2026',  coupon: 5.64, accr: 408478, ytm: null },
+        { name: 'PIMCO GIS Income Fund USD Ins',            mkt:  5150801, maturity: 'Open-ended',   coupon: 6.34, accr: 103676, ytm: null },
+        { name: 'FAB MENA Plus FMP2 ADV DIS USD',           mkt:  4084292, maturity: '31 Jul 2027',  coupon: 5.62, accr:  73333, ytm: null },
+        { name: 'FAB MENA Plus FMP Series 1 AED DISD',      mkt:  3089829, maturity: '15 Nov 2026',  coupon: 5.64, accr:  55098, ytm: null },
+        { name: 'First Abu Dhabi Bank PJS 6.32 2034',        mkt:  1537410, maturity: '04 Oct 2034',  coupon: 6.32, accr:  30907, ytm: 5.92 },
+        { name: 'Australia New Zealand Banking 4.4 2026',    mkt:  1000100, maturity: '19 May 2026',  coupon: 4.40, accr:  14345, ytm: 4.13 },
+        { name: 'Omgrid Funding Ltd 5.196 2027',             mkt:  1003780, maturity: '16 Aug 2027',  coupon: 5.20, accr:  16940, ytm: 4.82 },
+        { name: 'Glencore Funding LLC 4.0 2027',             mkt:   997480, maturity: '27 Sep 2027',  coupon: 4.00, accr:  13041, ytm: 4.28 },
+        { name: 'Danske Bank A/S 4.298 2028',                mkt:   998650, maturity: '01 Oct 2028',  coupon: 4.30, accr:  14013, ytm: 4.37 },
+        { name: 'Schlumberger Hldgs Corp 3.9 2028',          mkt:   993560, maturity: '17 May 2028',  coupon: 3.90, accr:  12715, ytm: 4.23 },
+        { name: 'BAT Intl Finance PLC 4.448 2028',           mkt:  1000070, maturity: '16 Sep 2028',  coupon: 4.45, accr:  14502, ytm: 4.44 },
+        { name: 'Saudi Telecom Co 3.89 2029',                mkt:   978300, maturity: '13 May 2029',  coupon: 3.89, accr:  12682, ytm: 4.66 },
+        { name: 'Newcastle Coal Infrastructure 4.4 2027',    mkt:   955614, maturity: '29 Sep 2027',  coupon: 4.40, accr:  14345, ytm: 4.95 },
+        { name: 'Nissan Motor Co 4.345 2027',                mkt:   983020, maturity: '17 Sep 2027',  coupon: 4.35, accr:  14166, ytm: 5.64 },
+    ]};
+
+    const FAB_IY_OLIVER = { total_mkt: 30466307, accr_int: 558485, bonds: [
+        { name: 'FAB MENA Plus FMP Series 3 USD',           mkt: 17764808, maturity: 'May 2028',     coupon: 5.83, accr: 330600, ytm: null  },
+        { name: 'BLACK SEA TRADE AND DEVE 5 2032',          mkt:  1421767, maturity: '27 Apr 2032',  coupon: 5.00, accr:  22822, ytm:  1.55 },
+        { name: 'KIB SUKUK LTD 5.535 2036',                 mkt:  1016778, maturity: '16 Apr 2036',  coupon: 5.54, accr:  18046, ytm:  1.56 },
+        { name: 'RIYAD SUKUK 6.209 2035',                   mkt:  1023712, maturity: '14 Jul 2035',  coupon: 6.21, accr:  20243, ytm:  2.37 },
+        { name: 'BSF FINANCE 5.761 2035',                   mkt:   989102, maturity: '03 Sep 2035',  coupon: 5.76, accr:  18782, ytm: -1.09 },
+        { name: 'ALINMA SUKUK LTD 5.792 2035',              mkt:  1016101, maturity: '10 Nov 2035',  coupon: 5.79, accr:  18884, ytm:  1.61 },
+        { name: 'ALDAR PROPERTIES PJSC 5.875 2056',         mkt:   948861, maturity: '14 Apr 2056',  coupon: 5.88, accr:  19154, ytm: -1.28 },
+        { name: 'SNB FUNDING LTD 6 2035',                   mkt:   923643, maturity: '24 Jun 2035',  coupon: 6.00, accr:  17605, ytm:  2.67 },
+        { name: 'FIRST ABU DHABI BANK PJS 5.8 2035',        mkt:   638160, maturity: '12 Mar 2035',  coupon: 5.80, accr:  11818, ytm:  2.11 },
+        { name: 'NATIONAL BANK OF KUWAIT 5. 2036',          mkt:   605329, maturity: '10 Feb 2036',  coupon: 5.25, accr:  10270, ytm:  0.81 },
+        { name: 'BANQUE OUEST AFRICAINE D 8 2033',          mkt:   508144, maturity: '22 Mar 2033',  coupon: 8.00, accr:  13041, ytm: -1.32 },
+        { name: 'ACWA Power Mgmt Invst 2039',               mkt:   462439, maturity: '15 Dec 2039',  coupon: 5.95, accr:   9699, ytm:  0.60 },
+        { name: 'BARCLAYS PLC 4.375 PERP',                  mkt:   333678, maturity: 'PERP',         coupon: 4.38, accr:   4850, ytm:  9.19 },
+        { name: 'BOS FUNDING LTD 4.875 2030',               mkt:   297566, maturity: '19 Nov 2030',  coupon: 4.88, accr:   4768, ytm:  0.21 },
+        { name: 'ROTHESAY LIFE 4.875 PERP',                 mkt:   297136, maturity: 'PERP',         coupon: 4.88, accr:   4768, ytm:  6.50 },
+        { name: 'NBK TIER 1 LTD 6.375 PERP',               mkt:   279669, maturity: 'PERP',         coupon: 6.38, accr:   5716, ytm:  1.70 },
+        { name: 'ING GROEP NV 3.875 PERP',                  mkt:   297421, maturity: 'PERP',         coupon: 3.88, accr:   3790, ytm:  9.85 },
+        { name: 'FIN DEPT GOVT SHARJAH 3.625 2033',         mkt:   260404, maturity: '10 Mar 2033',  coupon: 3.63, accr:   3546, ytm:  1.33 },
+        { name: 'SAB AT1 LTD 6.5 PERP',                    mkt:   206492, maturity: 'PERP',         coupon: 6.50, accr:   4238, ytm:  2.89 },
+        { name: 'NATIONAL BK OF FUJAIRAH 3.6 2026',         mkt:   200020, maturity: '06 May 2026',  coupon: 3.60, accr:   2347, ytm:  0.01 },
+        { name: 'SVENSKA HANDELSBANKEN AT1 PERP',           mkt:   199684, maturity: 'PERP',         coupon: 4.38, accr:   2853, ytm:  4.16 },
+        { name: 'EFG INTERNATIONAL AG 5.5 PERP',            mkt:   198100, maturity: 'PERP',         coupon: 5.50, accr:   3586, ytm:  4.26 },
+        { name: 'BURGAN BANK 2.75 2031',                    mkt:   198053, maturity: '15 Dec 2031',  coupon: 2.75, accr:   1793, ytm:  6.48 },
+        { name: 'CNP ASSURANCES 4.875 PERP',                mkt:   187991, maturity: 'PERP',         coupon: 4.88, accr:   3179, ytm:  8.59 },
+        { name: 'ALLIANZ SE 3.2 2099',                      mkt:   191250, maturity: '07 Sep 2099',  coupon: 3.20, accr:   2087, ytm: 10.99 },
+    ]};
+
+    const FAB_AK_JOSEPH = { total_mkt: 5113295, accr_int: 91667, bonds: [
+        { name: 'FAB MENA Plus FMP2 ADV DIS USD',           mkt:  5113295, maturity: '31 Jul 2027',  coupon: 5.62, accr:  91667, ytm: null },
+    ]};
+
+    const ACM_BOND_DETAIL = {
+        issuer:    'Plate Bank (Мексика)',
+        amount:    '$2,600,000',
+        purchase:  '108.06% от номинала',
+        coupon:    '15.5% годовых',
+        freq:      'каждые 6 месяцев',
+        ytm:       '11.8% годовых',
+        maturity:  '16.07.2028'
+    };
+
+    const ELLINGTON_FI_SCHEDULE = [
+        { date: '23.07.2026', desc: 'Промежуточный платёж',  amount: 3000000  },
+        { date: '23.07.2027', desc: 'Промежуточный платёж',  amount: 3000000  },
+        { date: '23.07.2027', desc: 'Основное погашение',    amount: 37500000 },
+    ];
 
     const PROP = [
         { name: "Villa", fact: 0, debt: 4492211, color: "#ff4757" },
@@ -604,11 +719,21 @@
         pTable("liqTable", depoP, tDepo);
     }
 
+    function renderBondPortfolioTable(tbId, portfolio) {
+        let h = "";
+        for (let b of portfolio.bonds) {
+            const ytmStr = b.ytm !== null ? '<span class="' + (b.ytm >= 0 ? 'ytm-pos' : 'ytm-neg') + '">' + b.ytm.toFixed(2) + '%</span>' : '—';
+            h += '<tr><td>' + b.name + '</td><td>$' + fmt(b.mkt) + '</td><td>' + b.maturity + '</td><td>' + b.coupon.toFixed(2) + '%</td><td>$' + fmt(b.accr) + '</td><td>' + ytmStr + '</td></tr>';
+        }
+        h += '<tr class="total-row"><td>ИТОГО</td><td>$' + fmt(portfolio.total_mkt) + '</td><td></td><td></td><td>$' + fmt(portfolio.accr_int) + '</td><td></td></tr>';
+        document.getElementById(tbId).innerHTML = h;
+    }
+
     function renderBondsTab() {
         pKpi("bondsKpi", "Bonds total", bondsP, tBonds, getPortfolioTotal());
         mkDoughnut("bondsDoughnut", Object.keys(bondsP), Object.values(bondsP), ["#00d26a", "#84cc16"], tBonds);
         mkBar("bondsBar", Object.keys(bondsP), Object.values(bondsP), ["#00d26a", "#84cc16"]);
-        // Custom table with bonds sub-breakdown
+        // Детализация: partner-level with FAB sub-breakdown
         const colors = ["#00d26a", "#84cc16"];
         const ks = Object.keys(bondsP);
         let h = "";
@@ -624,6 +749,19 @@
         }
         h += '<tr class="total-row"><td>TOTAL</td><td class="align-right">'+fU(tBonds)+'</td><td class="align-right">100%</td><td></td></tr>';
         document.getElementById("bondsTable").innerHTML = h;
+        // FAB sub-portfolio bond tables
+        renderBondPortfolioTable("fabJosephTable", FAB_IY_JOSEPH);
+        renderBondPortfolioTable("fabOliverTable", FAB_IY_OLIVER);
+        renderBondPortfolioTable("fabAkJosephTable", FAB_AK_JOSEPH);
+        // ACM bond analytics card
+        document.getElementById("acmBondCard").innerHTML =
+            '<div class="acm-row"><span class="acm-label">Эмитент</span><span class="acm-value">'+ACM_BOND_DETAIL.issuer+'</span></div>' +
+            '<div class="acm-row"><span class="acm-label">Сумма</span><span class="acm-value">'+ACM_BOND_DETAIL.amount+'</span></div>' +
+            '<div class="acm-row"><span class="acm-label">Цена покупки</span><span class="acm-value">'+ACM_BOND_DETAIL.purchase+'</span></div>' +
+            '<div class="acm-row"><span class="acm-label">Купон</span><span class="acm-value">'+ACM_BOND_DETAIL.coupon+'</span></div>' +
+            '<div class="acm-row"><span class="acm-label">Выплата купонов</span><span class="acm-value">'+ACM_BOND_DETAIL.freq+'</span></div>' +
+            '<div class="acm-row"><span class="acm-label">YTM (доходность к погашению)</span><span class="acm-value" style="color:var(--accent-green)">'+ACM_BOND_DETAIL.ytm+'</span></div>' +
+            '<div class="acm-row"><span class="acm-label">Дата погашения</span><span class="acm-value">'+ACM_BOND_DETAIL.maturity+'</span></div>';
     }
 
     function renderStocksTab() {
@@ -663,6 +801,15 @@
         }
         h += '<tr class="total-row"><td>Ellington TOTAL</td><td class="align-right">'+fU(PROP_FACT)+'</td><td class="align-right">'+fU(PROP_DEBT)+'</td><td class="align-right">'+fU(PROP_FACT+PROP_DEBT)+'</td></tr>';
         document.getElementById("propTable").innerHTML = h;
+
+        // Ellington fixed income repayment schedule
+        let sh = "";
+        const schedTotal = ELLINGTON_FI_SCHEDULE.reduce((s, r) => s + r.amount, 0);
+        for (let r of ELLINGTON_FI_SCHEDULE) {
+            sh += '<tr><td>' + r.date + '</td><td>' + r.desc + '</td><td>' + fmt(r.amount) + '</td></tr>';
+        }
+        sh += '<tr class="total-row"><td>ИТОГО</td><td></td><td>' + fmt(schedTotal) + '</td></tr>';
+        document.getElementById("ellingtonScheduleTable").innerHTML = sh;
     }
 
     // ================================================================
