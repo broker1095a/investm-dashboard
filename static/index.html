@@ -321,9 +321,9 @@
                     <div class="value" id="portfolioValue">$0</div>
                     <div class="portfolio-pnl positive" id="portfolioPnl">+$0 (+0%)</div>
                     <div class="portfolio-details">
-                        Количество: <span id="portfolioBtc">615 BTC</span><br>
-                        Средняя цена: <span id="portfolioAvg">$58,297</span><br>
-                        Инвестировано: <span id="portfolioInvested">$35,871,562</span>
+                        Количество: <span id="portfolioBtc">26 BTC</span><br>
+                        Средняя цена: <span id="portfolioAvg">$44,666</span><br>
+                        Инвестировано: <span id="portfolioInvested">$1,170,108</span>
                     </div>
                 </div>
             </section>
@@ -426,13 +426,18 @@
     // STATIC DATA (for non-crypto tabs)
     // ================================================================
     const DATA = {
-        FAB: { Depo: 73311399, bonds: 82722275, stocks: 7024490 },
+        FAB: { Depo: 67270626, bonds: 81275118, stocks: 7024490, bondsBreakdown: [
+            { name: "FAB_IY_Joseph", value: 45695516 },
+            { name: "FAB_IY_Oliver", value: 30466307 },
+            { name: "FAB_AK_Joseph", value: 5113295 }
+        ]},
         ENBD: { Depo: 34961949 },
-        Exante: { stocks: 30386773 },
-        ACM: { stocks: 21940557, bonds: 2600000, stocksBreakdown: [
-            { name: "стратегии", value: 20500000 },
+        "Фонды_Власенко Н.": { stocks: 30386773 },
+        "Фонды_АСМ": { stocks: 24440557, bonds: 2600000, stocksBreakdown: [
+            { name: "стратегии", value: 23000000 },
             { name: "Venture Capital Funds (from Aton)", value: 1440557 }
         ]},
+        "Exante (счет IY)": { stocks: 45000000 },
         IsBank: { Depo: 900000 }
     };
 
@@ -603,16 +608,31 @@
         pKpi("bondsKpi", "Bonds total", bondsP, tBonds, getPortfolioTotal());
         mkDoughnut("bondsDoughnut", Object.keys(bondsP), Object.values(bondsP), ["#00d26a", "#84cc16"], tBonds);
         mkBar("bondsBar", Object.keys(bondsP), Object.values(bondsP), ["#00d26a", "#84cc16"]);
-        pTable("bondsTable", bondsP, tBonds, "#00d26a");
+        // Custom table with bonds sub-breakdown
+        const colors = ["#00d26a", "#84cc16"];
+        const ks = Object.keys(bondsP);
+        let h = "";
+        for (let i = 0; i < ks.length; i++) {
+            const k = ks[i], v = bondsP[k], p = v / tBonds * 100, c = colors[i % colors.length];
+            h += '<tr><td><div class="asset-name"><span class="color-dot" style="background:'+c+'"></span>'+k+'</div></td><td class="align-right">'+fU(v)+'</td><td class="align-right">'+p.toFixed(1)+'%</td><td class="pct-bar-cell"><div class="pct-bar-bg"><div class="pct-bar-fill" style="width:'+p+'%;background:'+c+'"></div></div></td></tr>';
+            if (DATA[k] && DATA[k].bondsBreakdown) {
+                for (let sub of DATA[k].bondsBreakdown) {
+                    const sp = sub.value / tBonds * 100;
+                    h += '<tr class="sub-row"><td>↳ '+sub.name+'</td><td class="align-right">'+fU(sub.value)+'</td><td class="align-right">'+sp.toFixed(1)+'%</td><td></td></tr>';
+                }
+            }
+        }
+        h += '<tr class="total-row"><td>TOTAL</td><td class="align-right">'+fU(tBonds)+'</td><td class="align-right">100%</td><td></td></tr>';
+        document.getElementById("bondsTable").innerHTML = h;
     }
 
     function renderStocksTab() {
         pKpi("stocksKpi", "Stocks total", stocksP, tStocks, getPortfolioTotal());
-        mkDoughnut("stocksDoughnut", Object.keys(stocksP), Object.values(stocksP), ["#bc8cff", "#f7931a", "#ff4757"], tStocks);
-        mkBar("stocksBar", Object.keys(stocksP), Object.values(stocksP), ["#bc8cff", "#f7931a", "#ff4757"]);
+        mkDoughnut("stocksDoughnut", Object.keys(stocksP), Object.values(stocksP), ["#bc8cff", "#f7931a", "#ff4757", "#4a9eff", "#ffc107"], tStocks);
+        mkBar("stocksBar", Object.keys(stocksP), Object.values(stocksP), ["#bc8cff", "#f7931a", "#ff4757", "#4a9eff", "#ffc107"]);
         // Custom table with ACM sub-breakdown
         const ks = Object.keys(stocksP);
-        const colors = ["#bc8cff", "#f7931a", "#ff4757"];
+        const colors = ["#bc8cff", "#f7931a", "#ff4757", "#4a9eff", "#ffc107"];
         let h = "";
         for (let i = 0; i < ks.length; i++) {
             const k = ks[i], v = stocksP[k], p = v / tStocks * 100, c = colors[i % colors.length];
