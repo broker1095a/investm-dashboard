@@ -91,15 +91,17 @@
         .sub-row td:first-child { padding-left: 32px !important; }
         .sub-row { border-bottom: none !important; }
         /* Bond analytics tables */
-        .bond-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        .bond-table th { background: var(--bg-secondary); color: var(--text-secondary); font-weight: 600; padding: 8px 10px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--border); }
-        .bond-table th:first-child { text-align: left; }
-        .bond-table td { padding: 7px 10px; text-align: right; border-bottom: 1px solid rgba(42,42,58,0.5); white-space: nowrap; }
-        .bond-table td:first-child { text-align: left; color: var(--text-primary); max-width: 280px; white-space: normal; line-height: 1.3; }
+        .bond-table-wrap { overflow-x: auto; }
+        .bond-table { width: 100%; border-collapse: collapse; font-size: 11.5px; min-width: 1100px; }
+        .bond-table th { background: var(--bg-secondary); color: var(--text-secondary); font-weight: 600; padding: 7px 9px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--border); }
+        .bond-table th:first-child, .bond-table th:nth-child(2) { text-align: left; }
+        .bond-table td { padding: 6px 9px; text-align: right; border-bottom: 1px solid rgba(42,42,58,0.5); white-space: nowrap; }
+        .bond-table td:first-child { text-align: left; color: var(--text-secondary); font-size: 10.5px; font-family: monospace; }
+        .bond-table td:nth-child(2) { text-align: left; color: var(--text-primary); max-width: 240px; white-space: normal; line-height: 1.3; }
         .bond-table tr:hover td { background: rgba(74,158,255,0.04); }
         .bond-table .total-row td { font-weight: 700; border-top: 2px solid var(--border); background: var(--bg-secondary); }
-        .bond-table .ytm-pos { color: var(--accent-green); }
-        .bond-table .ytm-neg { color: var(--accent-red); }
+        .bond-table .pnl-pos { color: var(--accent-green); }
+        .bond-table .pnl-neg { color: var(--accent-red); }
         /* ACM analytics card */
         .analytics-card { background: var(--bg-secondary); border-radius: 12px; padding: 18px 22px; border: 1px solid var(--border); }
         .analytics-card .acm-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(42,42,58,0.4); font-size: 13px; }
@@ -315,15 +317,15 @@
             <!-- FAB bond sub-portfolios -->
             <div class="table-card">
                 <h3>&#128200; FAB_IY_Joseph &mdash; облигации <span style="color:var(--text-secondary);font-weight:400;font-size:13px">Mkt. Value 30.04.26</span></h3>
-                <table class="bond-table"><thead><tr><th>Название</th><th>Mkt. Value</th><th>Погашение</th><th>Купон %</th><th>Accr. Int. (4 мес.)</th><th>YTM</th></tr></thead><tbody id="fabJosephTable"></tbody></table>
+                <div class="bond-table-wrap"><table class="bond-table"><thead><tr><th>ISIN (код)</th><th>ISIN (название)</th><th>Maturity</th><th>Days</th><th>Купон net, % год.</th><th>Accr. Int. 4 мес 26</th><th>Mkt. Value 30.04.26</th><th>Cost Value</th><th>P&amp;L (price), USD</th><th>P&amp;L (price), %</th><th>Weight</th></tr></thead><tbody id="fabJosephTable"></tbody></table></div>
             </div>
             <div class="table-card">
                 <h3>&#128200; FAB_IY_Oliver &mdash; облигации <span style="color:var(--text-secondary);font-weight:400;font-size:13px">Mkt. Value 30.04.26</span></h3>
-                <table class="bond-table"><thead><tr><th>Название</th><th>Mkt. Value</th><th>Погашение</th><th>Купон %</th><th>Accr. Int. (4 мес.)</th><th>YTM</th></tr></thead><tbody id="fabOliverTable"></tbody></table>
+                <div class="bond-table-wrap"><table class="bond-table"><thead><tr><th>ISIN (код)</th><th>ISIN (название)</th><th>Maturity</th><th>Days</th><th>Купон net, % год.</th><th>Accr. Int. 4 мес 26</th><th>Mkt. Value 30.04.26</th><th>Cost Value</th><th>P&amp;L (price), USD</th><th>P&amp;L (price), %</th><th>Weight</th></tr></thead><tbody id="fabOliverTable"></tbody></table></div>
             </div>
             <div class="table-card">
                 <h3>&#128200; FAB_AK_Joseph &mdash; облигации <span style="color:var(--text-secondary);font-weight:400;font-size:13px">Mkt. Value 30.04.26</span></h3>
-                <table class="bond-table"><thead><tr><th>Название</th><th>Mkt. Value</th><th>Погашение</th><th>Купон %</th><th>Accr. Int. (4 мес.)</th><th>YTM</th></tr></thead><tbody id="fabAkJosephTable"></tbody></table>
+                <div class="bond-table-wrap"><table class="bond-table"><thead><tr><th>ISIN (код)</th><th>ISIN (название)</th><th>Maturity</th><th>Days</th><th>Купон net, % год.</th><th>Accr. Int. 4 мес 26</th><th>Mkt. Value 30.04.26</th><th>Cost Value</th><th>P&amp;L (price), USD</th><th>P&amp;L (price), %</th><th>Weight</th></tr></thead><tbody id="fabAkJosephTable"></tbody></table></div>
             </div>
             <!-- ACM bond analytics -->
             <div class="table-card">
@@ -491,53 +493,53 @@
     // ================================================================
     // BOND ANALYTICS DATA
     // ================================================================
-    const FAB_IY_JOSEPH = { total_mkt: 45695516, accr_int: 798242, bonds: [
-        { name: 'FAB MENA Plus FMP Series 1 USD',          mkt: 22922610, maturity: '15 Nov 2026',  coupon: 5.64, accr: 408478, ytm: null },
-        { name: 'PIMCO GIS Income Fund USD Ins',            mkt:  5150801, maturity: 'Open-ended',   coupon: 6.34, accr: 103676, ytm: null },
-        { name: 'FAB MENA Plus FMP2 ADV DIS USD',           mkt:  4084292, maturity: '31 Jul 2027',  coupon: 5.62, accr:  73333, ytm: null },
-        { name: 'FAB MENA Plus FMP Series 1 AED DISD',      mkt:  3089829, maturity: '15 Nov 2026',  coupon: 5.64, accr:  55098, ytm: null },
-        { name: 'First Abu Dhabi Bank PJS 6.32 2034',        mkt:  1537410, maturity: '04 Oct 2034',  coupon: 6.32, accr:  30907, ytm: 5.92 },
-        { name: 'Australia New Zealand Banking 4.4 2026',    mkt:  1000100, maturity: '19 May 2026',  coupon: 4.40, accr:  14345, ytm: 4.13 },
-        { name: 'Omgrid Funding Ltd 5.196 2027',             mkt:  1003780, maturity: '16 Aug 2027',  coupon: 5.20, accr:  16940, ytm: 4.82 },
-        { name: 'Glencore Funding LLC 4.0 2027',             mkt:   997480, maturity: '27 Sep 2027',  coupon: 4.00, accr:  13041, ytm: 4.28 },
-        { name: 'Danske Bank A/S 4.298 2028',                mkt:   998650, maturity: '01 Oct 2028',  coupon: 4.30, accr:  14013, ytm: 4.37 },
-        { name: 'Schlumberger Hldgs Corp 3.9 2028',          mkt:   993560, maturity: '17 May 2028',  coupon: 3.90, accr:  12715, ytm: 4.23 },
-        { name: 'BAT Intl Finance PLC 4.448 2028',           mkt:  1000070, maturity: '16 Sep 2028',  coupon: 4.45, accr:  14502, ytm: 4.44 },
-        { name: 'Saudi Telecom Co 3.89 2029',                mkt:   978300, maturity: '13 May 2029',  coupon: 3.89, accr:  12682, ytm: 4.66 },
-        { name: 'Newcastle Coal Infrastructure 4.4 2027',    mkt:   955614, maturity: '29 Sep 2027',  coupon: 4.40, accr:  14345, ytm: 4.95 },
-        { name: 'Nissan Motor Co 4.345 2027',                mkt:   983020, maturity: '17 Sep 2027',  coupon: 4.35, accr:  14166, ytm: 5.64 },
+    const FAB_IY_JOSEPH = { total_mkt: 45695516, total_accr: 798242, total_cost: 44030999, total_pnl_usd: 1664517, total_pnl_pct: 3.78, coupon_avg: 5.0, bonds: [
+        { isin: 'IE00BK6JPR27', name: 'FAB MENA Plus FMP Series 1 USD',          maturity: '15-Nov-2026', days:    172, coupon_net: 5.1, accr: 408478, mkt: 22922610, cost: 22200000, pnl_usd:  722610, pnl_pct:  3.26, weight: 50.4 },
+        { isin: 'IE00B8JDQ960', name: 'PIMCO GIS Income Fund USD Ins',            maturity: 'Open-ended',  days:   null, coupon_net: 5.7, accr: 103676, mkt:  5150801, cost:  5013125, pnl_usd:  137676, pnl_pct:  2.75, weight: 11.4 },
+        { isin: 'AEC01476F247', name: 'FAB MENA Plus FMP2 ADV DIS USD',           maturity: '31-Jul-2027', days:    499, coupon_net: 5.1, accr:  73333, mkt:  4084292, cost:  4000000, pnl_usd:   84292, pnl_pct:  2.11, weight:  9.1 },
+        { isin: 'IE000FWPFS42', name: 'FAB MENA Plus FMP Series 1 AED DISD',      maturity: '15-Nov-2026', days:    172, coupon_net: 5.1, accr:  55098, mkt:  3089829, cost:  2994827, pnl_usd:   95002, pnl_pct:  3.17, weight:  6.8 },
+        { isin: 'XS2676777605', name: 'First Abu Dhabi Bank PJS 6.32 2034',        maturity: '04-Oct-2034', days:   3052, coupon_net: 5.8, accr:  30907, mkt:  1537410, cost:  1479499, pnl_usd:   57911, pnl_pct:  3.91, weight:  3.4 },
+        { isin: 'USQ0426RND62', name: 'Australia New Zealand Banking 4.4 19/05/2026', maturity: '19-May-2026', days: -8, coupon_net: 4.0, accr: 14345, mkt:  1000100, cost:    957407, pnl_usd:   42693, pnl_pct:  4.46, weight:  2.2 },
+        { isin: 'XS1577964536', name: 'Omgrid Funding Ltd 5.196 2027',             maturity: '16-Aug-2027', days:    446, coupon_net: 4.9, accr:  16940, mkt:  1003780, cost:    943470, pnl_usd:   60310, pnl_pct:  6.39, weight:  2.1 },
+        { isin: 'USU37818AR97', name: 'Glencore Funding LLC 4.0 2027',             maturity: '27-Sep-2027', days:    488, coupon_net: 3.7, accr:  13041, mkt:   997480, cost:    932441, pnl_usd:   65039, pnl_pct:  6.98, weight:  2.1 },
+        { isin: 'US23636BBC28', name: 'Danske Bank A/S 4.298 2028',                maturity: '01-Oct-2028', days:    858, coupon_net: 4.0, accr:  14013, mkt:   998650, cost:    927328, pnl_usd:   71322, pnl_pct:  7.69, weight:  2.1 },
+        { isin: 'USU8066LAH79', name: 'Schlumberger Hldgs Corp 3.9 2028',          maturity: '17-May-2028', days:    721, coupon_net: 3.6, accr:  12715, mkt:   993560, cost:    925623, pnl_usd:   67937, pnl_pct:  7.34, weight:  2.1 },
+        { isin: 'US05530QAP54', name: 'BAT Intl Finance PLC 4.448 2028',           maturity: '16-Sep-2028', days:    843, coupon_net: 4.2, accr:  14502, mkt:  1000070, cost:    924019, pnl_usd:   76051, pnl_pct:  8.23, weight:  2.1 },
+        { isin: 'XS1992985694', name: 'Saudi Telecom Co 3.89 2029',                maturity: '13-May-2029', days:   1082, coupon_net: 3.6, accr:  12682, mkt:   978300, cost:    923418, pnl_usd:   54882, pnl_pct:  5.94, weight:  2.1 },
+        { isin: 'USQ66345AA95', name: 'Newcastle Coal Infrastructure 4.4 2027',    maturity: '29-Sep-2027', days:    490, coupon_net: 4.3, accr:  14345, mkt:   955614, cost:    907129, pnl_usd:   48485, pnl_pct:  5.34, weight:  2.1 },
+        { isin: 'USJ57160DY66', name: 'Nissan Motor Co 4.345 2027',                maturity: '17-Sep-2027', days:    478, coupon_net: 4.2, accr:  14166, mkt:   983020, cost:    902713, pnl_usd:   80307, pnl_pct:  8.90, weight:  2.1 },
     ]};
 
-    const FAB_IY_OLIVER = { total_mkt: 30466307, accr_int: 558485, bonds: [
-        { name: 'FAB MENA Plus FMP Series 3 USD',           mkt: 17764808, maturity: 'May 2028',     coupon: 5.83, accr: 330600, ytm: null  },
-        { name: 'BLACK SEA TRADE AND DEVE 5 2032',          mkt:  1421767, maturity: '27 Apr 2032',  coupon: 5.00, accr:  22822, ytm:  1.55 },
-        { name: 'KIB SUKUK LTD 5.535 2036',                 mkt:  1016778, maturity: '16 Apr 2036',  coupon: 5.54, accr:  18046, ytm:  1.56 },
-        { name: 'RIYAD SUKUK 6.209 2035',                   mkt:  1023712, maturity: '14 Jul 2035',  coupon: 6.21, accr:  20243, ytm:  2.37 },
-        { name: 'BSF FINANCE 5.761 2035',                   mkt:   989102, maturity: '03 Sep 2035',  coupon: 5.76, accr:  18782, ytm: -1.09 },
-        { name: 'ALINMA SUKUK LTD 5.792 2035',              mkt:  1016101, maturity: '10 Nov 2035',  coupon: 5.79, accr:  18884, ytm:  1.61 },
-        { name: 'ALDAR PROPERTIES PJSC 5.875 2056',         mkt:   948861, maturity: '14 Apr 2056',  coupon: 5.88, accr:  19154, ytm: -1.28 },
-        { name: 'SNB FUNDING LTD 6 2035',                   mkt:   923643, maturity: '24 Jun 2035',  coupon: 6.00, accr:  17605, ytm:  2.67 },
-        { name: 'FIRST ABU DHABI BANK PJS 5.8 2035',        mkt:   638160, maturity: '12 Mar 2035',  coupon: 5.80, accr:  11818, ytm:  2.11 },
-        { name: 'NATIONAL BANK OF KUWAIT 5. 2036',          mkt:   605329, maturity: '10 Feb 2036',  coupon: 5.25, accr:  10270, ytm:  0.81 },
-        { name: 'BANQUE OUEST AFRICAINE D 8 2033',          mkt:   508144, maturity: '22 Mar 2033',  coupon: 8.00, accr:  13041, ytm: -1.32 },
-        { name: 'ACWA Power Mgmt Invst 2039',               mkt:   462439, maturity: '15 Dec 2039',  coupon: 5.95, accr:   9699, ytm:  0.60 },
-        { name: 'BARCLAYS PLC 4.375 PERP',                  mkt:   333678, maturity: 'PERP',         coupon: 4.38, accr:   4850, ytm:  9.19 },
-        { name: 'BOS FUNDING LTD 4.875 2030',               mkt:   297566, maturity: '19 Nov 2030',  coupon: 4.88, accr:   4768, ytm:  0.21 },
-        { name: 'ROTHESAY LIFE 4.875 PERP',                 mkt:   297136, maturity: 'PERP',         coupon: 4.88, accr:   4768, ytm:  6.50 },
-        { name: 'NBK TIER 1 LTD 6.375 PERP',               mkt:   279669, maturity: 'PERP',         coupon: 6.38, accr:   5716, ytm:  1.70 },
-        { name: 'ING GROEP NV 3.875 PERP',                  mkt:   297421, maturity: 'PERP',         coupon: 3.88, accr:   3790, ytm:  9.85 },
-        { name: 'FIN DEPT GOVT SHARJAH 3.625 2033',         mkt:   260404, maturity: '10 Mar 2033',  coupon: 3.63, accr:   3546, ytm:  1.33 },
-        { name: 'SAB AT1 LTD 6.5 PERP',                    mkt:   206492, maturity: 'PERP',         coupon: 6.50, accr:   4238, ytm:  2.89 },
-        { name: 'NATIONAL BK OF FUJAIRAH 3.6 2026',         mkt:   200020, maturity: '06 May 2026',  coupon: 3.60, accr:   2347, ytm:  0.01 },
-        { name: 'SVENSKA HANDELSBANKEN AT1 PERP',           mkt:   199684, maturity: 'PERP',         coupon: 4.38, accr:   2853, ytm:  4.16 },
-        { name: 'EFG INTERNATIONAL AG 5.5 PERP',            mkt:   198100, maturity: 'PERP',         coupon: 5.50, accr:   3586, ytm:  4.26 },
-        { name: 'BURGAN BANK 2.75 2031',                    mkt:   198053, maturity: '15 Dec 2031',  coupon: 2.75, accr:   1793, ytm:  6.48 },
-        { name: 'CNP ASSURANCES 4.875 PERP',                mkt:   187991, maturity: 'PERP',         coupon: 4.88, accr:   3179, ytm:  8.59 },
-        { name: 'ALLIANZ SE 3.2 2099',                      mkt:   191250, maturity: '07 Sep 2099',  coupon: 3.20, accr:   2087, ytm: 10.99 },
+    const FAB_IY_OLIVER = { total_mkt: 30466307, total_accr: 558485, total_cost: 29860041, total_pnl_usd: 606265, total_pnl_pct: 2.03, coupon_avg: 5.2, bonds: [
+        { isin: 'FABS3US',      name: 'FAB MENA Plus FMP Series 3 USD',           maturity: '~May-2028',   days:    722, coupon_net: 5.3, accr: 330600, mkt: 17764808, cost: 17400000, pnl_usd:  364808, pnl_pct:  2.10, weight: 58.3 },
+        { isin: 'XS3266600328', name: 'BLACK SEA TRADE AND DEVE 5',               maturity: '27-Apr-2032', days:   2162, coupon_net: 4.4, accr:  22822, mkt:  1421767, cost:  1400000, pnl_usd:   21767, pnl_pct:  1.55, weight:  4.7 },
+        { isin: 'XS3178780014', name: 'KIB SUKUK LTD 5.535 04/16/2036',           maturity: '16-Apr-2036', days:   3612, coupon_net: 4.9, accr:  18046, mkt:  1016778, cost:  1001125, pnl_usd:   15653, pnl_pct:  1.56, weight:  3.4 },
+        { isin: 'XS3068748618', name: 'RIYAD SUKUK 6.209 07/14/2035',             maturity: '14-Jul-2035', days:   3335, coupon_net: 5.6, accr:  20243, mkt:  1023712, cost:  1000000, pnl_usd:   23712, pnl_pct:  2.37, weight:  3.3 },
+        { isin: 'XS3169052183', name: 'BSF FINANCE 5.761 09/03/2035',             maturity: '03-Sep-2035', days:   3386, coupon_net: 5.2, accr:  18782, mkt:   989102, cost:  1000000, pnl_usd:  -10898, pnl_pct: -1.09, weight:  3.3 },
+        { isin: 'XS3213445003', name: 'ALINMA SUKUK LTD 5.792 11/10/35',          maturity: '10-Nov-2035', days:   3454, coupon_net: 5.2, accr:  18884, mkt:  1016101, cost:  1000000, pnl_usd:   16101, pnl_pct:  1.61, weight:  3.3 },
+        { isin: 'XS3261145539', name: 'ALDAR PROPERTIES PJSC 5.875',              maturity: '14-Apr-2056', days:  10915, coupon_net: 5.5, accr:  19154, mkt:   948861, cost:    961136, pnl_usd:  -12275, pnl_pct: -1.28, weight:  3.2 },
+        { isin: 'XS3098982815', name: 'SNB FUNDING LTD 6 06/24/2035',             maturity: '24-Jun-2035', days:   3315, coupon_net: 5.4, accr:  17605, mkt:   923643, cost:    899613, pnl_usd:   24030, pnl_pct:  2.67, weight:  3.0 },
+        { isin: 'XS3226594581', name: 'FIRST ABU DHABI BANK PJS 5.8',             maturity: '12-Mar-2035', days:   3211, coupon_net: 5.2, accr:  11818, mkt:   638160, cost:    625000, pnl_usd:   13160, pnl_pct:  2.11, weight:  2.1 },
+        { isin: 'XS3223314017', name: 'NATIONAL BANK OF KUWAIT 5.',               maturity: '10-Feb-2036', days:   3546, coupon_net: 4.6, accr:  10270, mkt:   605329, cost:    600450, pnl_usd:    4879, pnl_pct:  0.81, weight:  2.0 },
+        { isin: 'XS3000457666', name: 'BANQUE OUEST AFRICAINE D 8',               maturity: '22-Mar-2033', days:   2491, coupon_net: 7.2, accr:  13041, mkt:   508144, cost:    514950, pnl_usd:   -6806, pnl_pct: -1.32, weight:  1.7 },
+        { isin: 'USM00020AA12', name: 'ACWA Power Mgmt Invst',                    maturity: '15-Dec-2039', days:   4950, coupon_net: 5.9, accr:   9699, mkt:   462439, cost:    459667, pnl_usd:    2772, pnl_pct:  0.60, weight:  1.5 },
+        { isin: 'US06738EBT10', name: 'BARCLAYS PLC 4.375 PERP',                  maturity: 'PERP',        days:   null, coupon_net: 4.3, accr:   4850, mkt:   333678, cost:    305592, pnl_usd:   28086, pnl_pct:  9.19, weight:  1.0 },
+        { isin: 'XS3221849568', name: 'BOS FUNDING LTD 4.875 11/19/2030',         maturity: '19-Nov-2030', days:   1637, coupon_net: 4.3, accr:   4768, mkt:   297566, cost:    296937, pnl_usd:     629, pnl_pct:  0.21, weight:  1.0 },
+        { isin: 'XS2399976195', name: 'ROTHESAY LIFE 4.875 PERP',                 maturity: 'PERP',        days:   null, coupon_net: 4.6, accr:   4768, mkt:   297136, cost:    279000, pnl_usd:   18136, pnl_pct:  6.50, weight:  0.9 },
+        { isin: 'XS3076918419', name: 'NBK TIER 1 LTD 6.375 PERP',               maturity: 'PERP',        days:   null, coupon_net: 5.8, accr:   5716, mkt:   279669, cost:    275000, pnl_usd:    4669, pnl_pct:  1.70, weight:  0.9 },
+        { isin: 'US45656837AY94',name: 'ING GROEP NV 3.875 PERP',                 maturity: 'PERP',        days:   null, coupon_net: 3.7, accr:   3790, mkt:   297421, cost:    270750, pnl_usd:   26671, pnl_pct:  9.85, weight:  0.9 },
+        { isin: 'XS2302929810', name: 'FIN DEPT GOVT SHARJAH 3.625',              maturity: '10-Mar-2033', days:   2479, coupon_net: 3.6, accr:   3546, mkt:   260404, cost:    256980, pnl_usd:    3424, pnl_pct:  1.33, weight:  0.9 },
+        { isin: 'XS2232307807', name: 'SAB AT1 LTD 6.5 PERP',                    maturity: 'PERP',        days:   null, coupon_net: 5.9, accr:   4238, mkt:   206492, cost:    200700, pnl_usd:    5792, pnl_pct:  2.89, weight:  0.7 },
+        { isin: 'BBG021ZRMK08', name: 'NATIONAL BK OF FUJAIRAH 3.6',              maturity: '06-May-2026', days:    -21, coupon_net: 3.0, accr:   2347, mkt:   200020, cost:    200000, pnl_usd:      20, pnl_pct:  0.01, weight:  0.7 },
+        { isin: 'XS2233263404', name: 'SVENSKA HANDELSBANKEN AT1',                maturity: 'PERP',        days:   null, coupon_net: 4.0, accr:   2853, mkt:   199684, cost:    191700, pnl_usd:    7984, pnl_pct:  4.16, weight:  0.6 },
+        { isin: 'CH0593093229', name: 'EFG INTERNATIONAL AG 5.5 PERP',            maturity: 'PERP',        days:   null, coupon_net: 5.2, accr:   3586, mkt:   198100, cost:    190000, pnl_usd:    8100, pnl_pct:  4.26, weight:  0.6 },
+        { isin: 'XS2265369491', name: 'BURGAN BANK 2.75',                         maturity: '15-Dec-2031', days:   2028, coupon_net: 2.4, accr:   1793, mkt:   198053, cost:    186000, pnl_usd:   12053, pnl_pct:  6.48, weight:  0.6 },
+        { isin: 'FR0014002RQ0', name: 'CNP ASSURANCES 4.875 PERP',                maturity: 'PERP',        days:   null, coupon_net: 5.0, accr:   3179, mkt:   187991, cost:    173125, pnl_usd:   14866, pnl_pct:  8.59, weight:  0.6 },
+        { isin: 'USX10001AB51', name: 'ALLIANZ SE 3.2 09/07/2099',                maturity: '07-Sep-2099', days:  26766, coupon_net: 3.1, accr:   2087, mkt:   191250, cost:    172316, pnl_usd:   18934, pnl_pct: 10.99, weight:  0.6 },
     ]};
 
-    const FAB_AK_JOSEPH = { total_mkt: 5113295, accr_int: 91667, bonds: [
-        { name: 'FAB MENA Plus FMP2 ADV DIS USD',           mkt:  5113295, maturity: '31 Jul 2027',  coupon: 5.62, accr:  91667, ytm: null },
+    const FAB_AK_JOSEPH = { total_mkt: 5113295, total_accr: 91667, total_cost: 5000000, total_pnl_usd: 113295, total_pnl_pct: 2.27, coupon_avg: 5.1, bonds: [
+        { isin: 'IE00BK6JPR27', name: 'FAB MENA Plus FMP2 ADV DIS USD',           maturity: '31-Jul-2027', days:    172, coupon_net: 5.1, accr:  91667, mkt:  5113295, cost:  5000000, pnl_usd:  113295, pnl_pct:  2.27, weight: 100.0 },
     ]};
 
     const ACM_BOND_DETAIL = {
@@ -553,7 +555,7 @@
     const ELLINGTON_FI_SCHEDULE = [
         { date: '23.07.2026', desc: 'Промежуточный платёж',  amount: 3000000  },
         { date: '23.07.2027', desc: 'Промежуточный платёж',  amount: 3000000  },
-        { date: '23.07.2027', desc: 'Основное погашение',    amount: 37500000 },
+        { date: '23.07.2028', desc: 'Основное погашение',    amount: 37500000 },
     ];
 
     const PROP = [
@@ -722,10 +724,35 @@
     function renderBondPortfolioTable(tbId, portfolio) {
         let h = "";
         for (let b of portfolio.bonds) {
-            const ytmStr = b.ytm !== null ? '<span class="' + (b.ytm >= 0 ? 'ytm-pos' : 'ytm-neg') + '">' + b.ytm.toFixed(2) + '%</span>' : '—';
-            h += '<tr><td>' + b.name + '</td><td>$' + fmt(b.mkt) + '</td><td>' + b.maturity + '</td><td>' + b.coupon.toFixed(2) + '%</td><td>$' + fmt(b.accr) + '</td><td>' + ytmStr + '</td></tr>';
+            const daysStr = b.days !== null ? b.days.toLocaleString() : '—';
+            const pnlUsdStr = '<span class="' + (b.pnl_usd >= 0 ? 'pnl-pos' : 'pnl-neg') + '">' + (b.pnl_usd >= 0 ? '+' : '') + fmt(b.pnl_usd) + '</span>';
+            const pnlPctStr = '<span class="' + (b.pnl_pct >= 0 ? 'pnl-pos' : 'pnl-neg') + '">' + (b.pnl_pct >= 0 ? '+' : '') + b.pnl_pct.toFixed(2) + '%</span>';
+            h += '<tr>'
+               + '<td>' + b.isin + '</td>'
+               + '<td>' + b.name + '</td>'
+               + '<td>' + b.maturity + '</td>'
+               + '<td>' + daysStr + '</td>'
+               + '<td>' + b.coupon_net.toFixed(1) + '%</td>'
+               + '<td>$' + fmt(b.accr) + '</td>'
+               + '<td>$' + fmt(b.mkt) + '</td>'
+               + '<td>$' + fmt(b.cost) + '</td>'
+               + '<td>' + pnlUsdStr + '</td>'
+               + '<td>' + pnlPctStr + '</td>'
+               + '<td>' + b.weight.toFixed(1) + '%</td>'
+               + '</tr>';
         }
-        h += '<tr class="total-row"><td>ИТОГО</td><td>$' + fmt(portfolio.total_mkt) + '</td><td></td><td></td><td>$' + fmt(portfolio.accr_int) + '</td><td></td></tr>';
+        const totalPnlUsdStr = '<span class="' + (portfolio.total_pnl_usd >= 0 ? 'pnl-pos' : 'pnl-neg') + '">' + (portfolio.total_pnl_usd >= 0 ? '+' : '') + fmt(portfolio.total_pnl_usd) + '</span>';
+        const totalPnlPctStr = '<span class="' + (portfolio.total_pnl_pct >= 0 ? 'pnl-pos' : 'pnl-neg') + '">' + (portfolio.total_pnl_pct >= 0 ? '+' : '') + portfolio.total_pnl_pct.toFixed(2) + '%</span>';
+        h += '<tr class="total-row">'
+           + '<td>ИТОГО / TOTAL</td><td></td><td></td><td></td>'
+           + '<td>' + portfolio.coupon_avg.toFixed(1) + '%</td>'
+           + '<td>$' + fmt(portfolio.total_accr) + '</td>'
+           + '<td>$' + fmt(portfolio.total_mkt) + '</td>'
+           + '<td>$' + fmt(portfolio.total_cost) + '</td>'
+           + '<td>' + totalPnlUsdStr + '</td>'
+           + '<td>' + totalPnlPctStr + '</td>'
+           + '<td>100%</td>'
+           + '</tr>';
         document.getElementById(tbId).innerHTML = h;
     }
 
