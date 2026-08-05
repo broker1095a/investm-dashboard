@@ -262,6 +262,7 @@
     <div class="header">
         <h1>&#128202; Investment <span>Dashboard v3.5</span></h1>
         <div class="header-right">
+            <span style="color:var(--text-secondary);font-size:13px">Дата обновления: <span id="updateDate">--</span></span>
             <span><span class="live-dot"></span>&nbsp; Live</span>
             <span id="headerTime">--:--:--</span>
         </div>
@@ -1229,7 +1230,9 @@
 
         loadPriceChart(30); // load chart in background (for when user clicks Crypto)
         setInterval(loadData, 60000);
-        // Update header clock
+        // Update header clock and date
+        const d = new Date();
+        document.getElementById('updateDate').textContent = d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' });
         setInterval(() => {
             document.getElementById('headerTime').textContent = new Date().toLocaleTimeString('ru-RU');
         }, 1000);
