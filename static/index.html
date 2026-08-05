@@ -441,7 +441,7 @@
             </div>
             <div class="table-card">
                 <h3>&#127968; ELLINGTON</h3>
-                <table><thead><tr><th>PROJECT</th><th class="align-right">FACT ($)</th><th class="align-right">DEBT ($)</th><th class="align-right">TOTAL ($)</th></tr></thead><tbody id="propTable"></tbody></table>
+                <table><thead><tr><th>PROJECT</th><th>DATE OF COMPLETION</th><th class="align-right">FACT ($)</th><th class="align-right">DEBT ($)</th><th class="align-right">TOTAL ($)</th></tr></thead><tbody id="propTable"></tbody></table>
             </div>
             <div class="table-card">
                 <h3>&#128197; График погашения &mdash; Investments with fixed income (Ellington, $30M)</h3>
@@ -475,17 +475,17 @@
     // STATIC DATA (for non-crypto tabs)
     // ================================================================
     const DATA = {
-        FAB: { Depo: 46923521, bonds: 81275118, stocks: 7024490, bondsBreakdown: [
+        FAB: { Depo: 49542726, bonds: 81275118, stocks: 7024490, bondsBreakdown: [
             { name: "FAB_IY_Joseph", value: 45695516 },
             { name: "FAB_IY_Oliver", value: 30466307 },
             { name: "FAB_AK_Joseph", value: 5113295 }
         ]},
-        ENBD: { Depo: 17961949 },
-        "Фонды_Власенко Н.": { stocks: 13358051 },
+        ENBD: { Depo: 17084059 },
+        "Фонды_Власенко Н.": { stocks: 11287553 },
         "Фонды_АСМ": { Depo: 6336000, stocks: 1237117, bonds: 2328322, bondsBreakdown: [
             { name: "bonds Plata", value: 2328322 }
         ]},
-        "Exante (счет IY)": { stocks: 147000000 },
+        "Exante (счет IY)": { stocks: 147255162 },
         IsBank: { Depo: 900000 }
     };
 
@@ -558,11 +558,11 @@
     ];
 
     const PROP = [
-        { name: "Villa", fact: 0, debt: 4492211, color: "#ff4757" },
-        { name: "Costa Mare (RAK)", fact: 4381375, debt: 10515234, color: "#bc8cff" },
-        { name: "Investments with fixed income (Ellington)", fact: 30000000, debt: 0, color: "#4a9eff" },
-        { name: "Dubai Islands (by Ellington)", fact: 54495913, debt: 0, color: "#00d26a" },
-        { name: "Offices (by Ellington)", fact: 54495913, debt: 0, color: "#f778ba" }
+        { name: "Villa", fact: 0, debt: 4492211, color: "#ff4757", completion: "2028" },
+        { name: "Costa Mare (RAK)", fact: 4381375, debt: 10515234, color: "#bc8cff", completion: "Q4 2028" },
+        { name: "Investments with fixed income (Ellington)", fact: 30000000, debt: 0, color: "#4a9eff", completion: "Jul 2028" },
+        { name: "Dubai Islands (by Ellington)", fact: 54495913, debt: 0, color: "#00d26a", completion: "Jul 2029" },
+        { name: "Offices (by Ellington)", fact: 54495913, debt: 0, color: "#f778ba", completion: "Dec 2029" }
     ];
     const POTENTIAL = [
         { name: "ROOM8 (coliving)", debt: 10000000 },
@@ -573,7 +573,7 @@
     const PROP_FACT = 143373200;
     const PROP_DEBT = 15007445;
     const POT_TOTAL = 72220000;
-    const GRAND_TOTAL = 469412441;
+    const GRAND_TOTAL = 469338421;
     const COLORS = ["#4a9eff", "#00d26a", "#f7931a", "#bc8cff", "#f778ba", "#ff4757", "#ffc107"];
 
     // Aggregates
@@ -823,9 +823,9 @@
         let h = "";
         for (let r of PROP) {
             const t = r.fact + r.debt;
-            h += '<tr><td>'+r.name+'</td><td class="align-right">'+(r.fact ? fU(r.fact) : "-")+'</td><td class="align-right">'+(r.debt ? fU(r.debt) : "-")+'</td><td class="align-right">'+fU(t)+'</td></tr>';
+            h += '<tr><td>'+r.name+'</td><td style="color:var(--text-secondary)">'+r.completion+'</td><td class="align-right">'+(r.fact ? fU(r.fact) : "-")+'</td><td class="align-right">'+(r.debt ? fU(r.debt) : "-")+'</td><td class="align-right">'+fU(t)+'</td></tr>';
         }
-        h += '<tr class="total-row"><td>Ellington TOTAL</td><td class="align-right">'+fU(PROP_FACT)+'</td><td class="align-right">'+fU(PROP_DEBT)+'</td><td class="align-right">'+fU(PROP_FACT+PROP_DEBT)+'</td></tr>';
+        h += '<tr class="total-row"><td>Ellington TOTAL</td><td></td><td class="align-right">'+fU(PROP_FACT)+'</td><td class="align-right">'+fU(PROP_DEBT)+'</td><td class="align-right">'+fU(PROP_FACT+PROP_DEBT)+'</td></tr>';
         document.getElementById("propTable").innerHTML = h;
 
         // Ellington fixed income repayment schedule
