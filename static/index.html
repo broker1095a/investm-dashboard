@@ -364,10 +364,11 @@
                     <div class="value" id="portfolioValue">$0</div>
                     <div class="portfolio-pnl positive" id="portfolioPnl">+$0 (+0%)</div>
                     <div class="portfolio-details">
-                        Количество: <span id="portfolioBtc">26 BTC</span><br>
-                        Средняя цена: <span id="portfolioAvg">$44,666</span><br>
-                        Инвестировано: <span id="portfolioInvested">$1,170,108</span>
+                        Количество: <span id="portfolioBtc">121.51 BTC</span><br>
+                        Средняя цена: <span id="portfolioAvg">$58,801</span><br>
+                        Инвестировано: <span id="portfolioInvested">$7,144,938</span>
                     </div>
+                    <div class="portfolio-details" id="btcPositions" style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px"></div>
                 </div>
             </section>
 
@@ -445,6 +446,10 @@
                 <table><thead><tr><th>PROJECT</th><th>DATE OF COMPLETION</th><th class="align-right">FACT ($)</th><th class="align-right">DEBT ($)</th><th class="align-right">TOTAL ($)</th></tr></thead><tbody id="propTable"></tbody></table>
             </div>
             <div class="table-card">
+                <h3>&#127970; EMMAR (Property investments)</h3>
+                <table><thead><tr><th>PROJECT</th><th>DATE OF COMPLETION</th><th class="align-right">FACT ($)</th><th class="align-right">DEBT ($)</th><th class="align-right">TOTAL ($)</th></tr></thead><tbody id="emmarTable"></tbody></table>
+            </div>
+            <div class="table-card">
                 <h3>&#128197; График погашения &mdash; Investments with fixed income (Ellington, $30M)</h3>
                 <table class="schedule-table">
                     <thead><tr><th>Дата</th><th>Описание</th><th>Сумма ($)</th></tr></thead>
@@ -476,17 +481,21 @@
     // STATIC DATA (for non-crypto tabs)
     // ================================================================
     const DATA = {
-        FAB: { Depo: 49542726, bonds: 81275118, stocks: 7024490, bondsBreakdown: [
+        FAB: { Depo: 42715344, bonds: 81275118, stocks: 7024490, bondsBreakdown: [
             { name: "FAB_IY_Joseph", value: 45695516 },
             { name: "FAB_IY_Oliver", value: 30466307 },
             { name: "FAB_AK_Joseph", value: 5113295 }
         ]},
-        ENBD: { Depo: 17084059 },
-        "Фонды_Власенко Н.": { stocks: 11287553 },
-        "Фонды_АСМ": { Depo: 6336000, stocks: 1237117, bonds: 2328322, bondsBreakdown: [
-            { name: "bonds Plata", value: 2328322 }
+        "Холодный кошелек": { btcQty: 26 },
+        ENBD: { Depo: 17101557 },
+        "Фонды_Власенко Н.": { stocks: 0 },
+        "Фонды_АСМ": { Depo: 550202, stocks: 1278802, bonds: 2432854, btcQty: 95.51, bondsBreakdown: [
+            { name: "bonds Plata", value: 2432854 }
         ]},
-        "Exante (счет IY)": { stocks: 147255162 },
+        "Exante (счет IY)": { stocks: 179721935, stocksBreakdown: [
+            { name: "Заведённый капитал", value: 158583159 },
+            { name: "Фин. результат от сделок", value: 21138776 }
+        ]},
         IsBank: { Depo: 900000 }
     };
 
@@ -559,7 +568,7 @@
     ];
 
     const PROP = [
-        { name: "Villa", fact: 0, debt: 4492211, color: "#ff4757", completion: "2028" },
+        { name: "Villa (вложения убраны)", fact: 0, debt: 4492211, color: "#ff4757", completion: "2028" },
         { name: "Costa Mare (RAK)", fact: 4381375, debt: 10515234, color: "#bc8cff", completion: "Q2 2028" },
         { name: "Investments with fixed income (Ellington)", fact: 30000000, debt: 0, color: "#4a9eff", completion: "Jul 2028" },
         { name: "Dubai Islands (by Ellington)", fact: 54495913, debt: 0, color: "#00d26a", completion: "Jul 2029" },
@@ -573,18 +582,26 @@
     ];
     const PROP_FACT = 143373200;
     const PROP_DEBT = 15007445;
+    // Emmar (Property investments) — вложений нет, только долг
+    const EMMAR = [
+        { name: "St.Regis", fact: 0, debt: 981703, completion: "—" }
+    ];
+    const EMMAR_FACT = EMMAR.reduce((a, r) => a + r.fact, 0);
+    const EMMAR_DEBT = EMMAR.reduce((a, r) => a + r.debt, 0);
     const POT_TOTAL = 72220000;
-    const GRAND_TOTAL = 469338421;
+    const GRAND_TOTAL = 484043005;
     const COLORS = ["#4a9eff", "#00d26a", "#f7931a", "#bc8cff", "#f778ba", "#ff4757", "#ffc107"];
 
     // Aggregates
     let tDepo = 0, tBonds = 0, tStocks = 0, tCrypto = 0;
-    let depoP = {}, bondsP = {}, stocksP = {};
+    let depoP = {}, bondsP = {}, stocksP = {}, btcQtyP = {};
+    let tBtcQty = 0;
     for (let p in DATA) {
         let d = DATA[p];
         if (d.Depo) { tDepo += d.Depo; depoP[p] = d.Depo; }
         if (d.bonds) { tBonds += d.bonds; bondsP[p] = d.bonds; }
         if (d.stocks) { tStocks += d.stocks; stocksP[p] = d.stocks; }
+        if (d.btcQty) { tBtcQty += d.btcQty; btcQtyP[p] = d.btcQty; }
     }
 
     // ================================================================
@@ -816,7 +833,8 @@
     function renderPropertyTab() {
         const kh = '<div class="kpi-card kpi-highlight"><div class="kpi-label">Ellington Total</div><div class="kpi-value">'+fU(PROP_FACT+PROP_DEBT)+'</div></div>'
             + '<div class="kpi-card"><div class="kpi-label">Fact</div><div class="kpi-value">'+fU(PROP_FACT)+'</div></div>'
-            + '<div class="kpi-card"><div class="kpi-label">Debt</div><div class="kpi-value" style="color:var(--accent-red)">'+fU(PROP_DEBT)+'</div></div>';
+            + '<div class="kpi-card"><div class="kpi-label">Debt</div><div class="kpi-value" style="color:var(--accent-red)">'+fU(PROP_DEBT)+'</div></div>'
+            + '<div class="kpi-card"><div class="kpi-label">Emmar &mdash; Debt</div><div class="kpi-value" style="color:var(--accent-red)">'+fU(EMMAR_DEBT)+'</div><div class="kpi-sub">вложений нет</div></div>';
         document.getElementById("propKpi").innerHTML = kh;
         const factProps = PROP.filter(p => p.fact > 0);
         mkDoughnut("propDoughnut", factProps.map(p => p.name), factProps.map(p => p.fact), factProps.map(p => p.color), PROP_FACT);
@@ -828,6 +846,14 @@
         }
         h += '<tr class="total-row"><td>Ellington TOTAL</td><td></td><td class="align-right">'+fU(PROP_FACT)+'</td><td class="align-right">'+fU(PROP_DEBT)+'</td><td class="align-right">'+fU(PROP_FACT+PROP_DEBT)+'</td></tr>';
         document.getElementById("propTable").innerHTML = h;
+
+        // Emmar (Property investments) — вложений нет, только долг
+        let eh = "";
+        for (let r of EMMAR) {
+            eh += '<tr><td>'+r.name+'</td><td style="color:var(--text-secondary)">'+r.completion+'</td><td class="align-right">'+(r.fact ? fU(r.fact) : "-")+'</td><td class="align-right">'+(r.debt ? fU(r.debt) : "-")+'</td><td class="align-right">'+fU(r.fact + r.debt)+'</td></tr>';
+        }
+        eh += '<tr class="total-row"><td>Emmar TOTAL</td><td></td><td class="align-right">'+(EMMAR_FACT ? fU(EMMAR_FACT) : "-")+'</td><td class="align-right">'+fU(EMMAR_DEBT)+'</td><td class="align-right">'+fU(EMMAR_FACT+EMMAR_DEBT)+'</td></tr>';
+        document.getElementById("emmarTable").innerHTML = eh;
 
         // Ellington fixed income repayment schedule
         let sh = "";
@@ -1096,6 +1122,13 @@
             // Portfolio
             document.getElementById('portfolioValue').textContent = formatUSD(data.portfolio.current_value);
             document.getElementById('portfolioBtc').textContent = data.portfolio.btc_amount + ' BTC';
+            if (data.portfolio.positions) {
+                document.getElementById('btcPositions').innerHTML = data.portfolio.positions.map(p =>
+                    p.name + ': <b>' + p.qty + ' BTC</b> &mdash; ' + formatUSD(p.current_value) +
+                    ' <span style="color:' + (p.pnl_usd >= 0 ? 'var(--accent-green)' : 'var(--accent-red)') + '">(' +
+                    formatPercent(p.pnl_percent) + ')</span>'
+                ).join('<br>');
+            }
             document.getElementById('portfolioAvg').textContent = formatUSD(data.portfolio.avg_price);
             document.getElementById('portfolioInvested').textContent = formatUSD(data.portfolio.invested);
             const pnlEl = document.getElementById('portfolioPnl');

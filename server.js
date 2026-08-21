@@ -1,6 +1,6 @@
 /**
  * BTC Dashboard v3.5 — Node.js Backend
- * Portfolio: 26 BTC bought at $44,666 average
+ * Portfolio: 121.51 BTC (26 холодный кошелёк @ $44,666 + 95.51 Фонды_ACM @ $62,556)
  * Auto-updates from CoinGecko, Alternative.me, Binance APIs
  */
 
@@ -15,9 +15,14 @@ app.use(cors());
 app.use(express.static(path.join(__dirname, 'static')));
 
 // ─── Portfolio Config ───
-const PORTFOLIO_BTC = 26;
-const PORTFOLIO_AVG_PRICE = 44666;
-const PORTFOLIO_INVESTED = 1170108; // фактически вложено
+// Две позиции по BTC: холодный кошелёк + купленное через Фонды_ACM
+const BTC_POSITIONS = [
+    { name: 'Холодный кошелек', qty: 26,    avg_price: 44666, invested: 1170108 },
+    { name: 'Фонды_ACM',        qty: 95.51, avg_price: 62556, invested: 5974830 }
+];
+const PORTFOLIO_BTC = +BTC_POSITIONS.reduce((a, p) => a + p.qty, 0).toFixed(2);      // 121.51 BTC
+const PORTFOLIO_INVESTED = BTC_POSITIONS.reduce((a, p) => a + p.invested, 0);        // фактически вложено
+const PORTFOLIO_AVG_PRICE = Math.round(PORTFOLIO_INVESTED / PORTFOLIO_BTC);
 
 // ─── Cache ───
 let cache = {
@@ -497,7 +502,19 @@ async function fetchAllDataLocal() {
 
     const result = {
         price: priceData,
-        portfolio: { btc_amount: PORTFOLIO_BTC, avg_price: PORTFOLIO_AVG_PRICE, invested: PORTFOLIO_INVESTED, current_value: Math.round(portfolioValue), pnl_usd: Math.round(pnlUsd), pnl_percent: +pnlPct.toFixed(2) },
+        portfolio: {
+            btc_amount: PORTFOLIO_BTC, avg_price: PORTFOLIO_AVG_PRICE, invested: PORTFOLIO_INVESTED,
+            current_value: Math.round(portfolioValue), pnl_usd: Math.round(pnlUsd), pnl_percent: +pnlPct.toFixed(2),
+            positions: BTC_POSITIONS.map(p => {
+                const value = p.qty * price;
+                return {
+                    name: p.name, qty: p.qty, avg_price: p.avg_price, invested: p.invested,
+                    current_value: Math.round(value),
+                    pnl_usd: Math.round(value - p.invested),
+                    pnl_percent: +(((value / p.invested) - 1) * 100).toFixed(2)
+                };
+            })
+        },
         indicators,
         updated_at: new Date().toISOString()
     };
@@ -600,7 +617,7 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log('='.repeat(50));
     console.log('  BTC Dashboard v3.5');
-    console.log(`  Portfolio: ${PORTFOLIO_BTC} BTC @ $${PORTFOLIO_AVG_PRICE.toLocaleString()}`);
+    console.log(`  Portfolio: ${PORTFOLIO_BTC} BTC @ ${PORTFOLIO_AVG_PRICE.toLocaleString()} (2 позиции)`);
     console.log(`  Invested: $${PORTFOLIO_INVESTED.toLocaleString()}`);
     console.log('='.repeat(50));
     console.log(`  Server: http://localhost:${PORT}`);
