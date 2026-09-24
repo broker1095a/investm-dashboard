@@ -364,9 +364,9 @@
                     <div class="value" id="portfolioValue">$0</div>
                     <div class="portfolio-pnl positive" id="portfolioPnl">+$0 (+0%)</div>
                     <div class="portfolio-details">
-                        Количество: <span id="portfolioBtc">120.84 BTC</span><br>
-                        Средняя цена: <span id="portfolioAvg">$59,127</span><br>
-                        Инвестировано: <span id="portfolioInvested">$7,144,938</span>
+                        Количество: <span id="portfolioBtc">1006.75 BTC</span><br>
+                        Средняя цена: <span id="portfolioAvg">$75,216</span><br>
+                        Инвестировано: <span id="portfolioInvested">$75,723,861</span>
                     </div>
                     <div class="portfolio-details" id="btcPositions" style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px"></div>
                 </div>
@@ -481,20 +481,20 @@
     // STATIC DATA (for non-crypto tabs)
     // ================================================================
     const DATA = {
-        FAB: { Depo: 42715344, bonds: 81275118, stocks: 7024490, bondsBreakdown: [
+        FAB: { Depo: 30000000, bonds: 81275118, stocks: 7024490, btcQty: 885.91, bondsBreakdown: [
             { name: "FAB_IY_Joseph", value: 45695516 },
             { name: "FAB_IY_Oliver", value: 30466307 },
             { name: "FAB_AK_Joseph", value: 5113295 }
         ]},
         "Холодный кошелек": { btcQty: 26 },
-        ENBD: { Depo: 17101557 },
+        ENBD: { Depo: 0 },
         "Фонды_Власенко Н.": { stocks: 0 },
         "Фонды_АСМ": { Depo: 550202, stocks: 1278802, bonds: 2432854, btcQty: 94.84, bondsBreakdown: [
             { name: "bonds Plata", value: 2432854 }
         ]},
-        "Exante (счет IY)": { stocks: 179721935, stocksBreakdown: [
+        "Exante (счет IY)": { stocks: 185389000, stocksBreakdown: [
             { name: "Заведённый капитал", value: 158583159 },
-            { name: "Фин. результат от сделок", value: 21138776 }
+            { name: "Фин. результат от сделок", value: 26805841 }
         ]},
         IsBank: { Depo: 900000 }
     };
@@ -589,7 +589,7 @@
     const EMMAR_FACT = EMMAR.reduce((a, r) => a + r.fact, 0);
     const EMMAR_DEBT = EMMAR.reduce((a, r) => a + r.debt, 0);
     const POT_TOTAL = 72220000;
-    const GRAND_TOTAL = 484043005;
+    const GRAND_TOTAL = 528472092;
     const COLORS = ["#4a9eff", "#00d26a", "#f7931a", "#bc8cff", "#f778ba", "#ff4757", "#ffc107"];
 
     // Aggregates

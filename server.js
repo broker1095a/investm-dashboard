@@ -1,6 +1,6 @@
 /**
  * BTC Dashboard v3.5 — Node.js Backend
- * Portfolio: 120.84 BTC (26 холодный кошелёк @ $44,666 + 94.84 Фонды_ACM @ $62,999)
+ * Portfolio: 1006.75 BTC (885.91 FAB ETF @ $77,411 + 26 холодный кошелёк @ $44,666 + 94.84 Фонды_ACM @ $62,999)
  * Auto-updates from CoinGecko, Alternative.me, Binance APIs
  */
 
@@ -15,12 +15,13 @@ app.use(cors());
 app.use(express.static(path.join(__dirname, 'static')));
 
 // ─── Portfolio Config ───
-// Две позиции по BTC: холодный кошелёк + купленное через Фонды_ACM
+// Позиции по BTC: ETF у FAB + холодный кошелёк + купленное через Фонды_ACM
 const BTC_POSITIONS = [
-    { name: 'Холодный кошелек', qty: 26,    avg_price: 44666, invested: 1170108 },
-    { name: 'Фонды_ACM',        qty: 94.84, avg_price: 62999, invested: 5974830 }
+    { name: 'FAB (ETF на BTC)',  qty: 885.91, avg_price: 77411, invested: 68578923 },
+    { name: 'Холодный кошелек',  qty: 26,     avg_price: 44666, invested: 1170108 },
+    { name: 'Фонды_ACM',         qty: 94.84,  avg_price: 62999, invested: 5974830 }
 ];
-const PORTFOLIO_BTC = +BTC_POSITIONS.reduce((a, p) => a + p.qty, 0).toFixed(2);      // 120.84 BTC
+const PORTFOLIO_BTC = +BTC_POSITIONS.reduce((a, p) => a + p.qty, 0).toFixed(2);      // 1006.75 BTC
 const PORTFOLIO_INVESTED = BTC_POSITIONS.reduce((a, p) => a + p.invested, 0);        // фактически вложено
 const PORTFOLIO_AVG_PRICE = Math.round(PORTFOLIO_INVESTED / PORTFOLIO_BTC);
 
