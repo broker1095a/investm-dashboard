@@ -364,13 +364,15 @@
                     <div class="value" id="portfolioValue">$0</div>
                     <div class="portfolio-pnl positive" id="portfolioPnl">+$0 (+0%)</div>
                     <div class="portfolio-details">
-                        Количество: <span id="portfolioBtc">1006.75 BTC</span><br>
-                        Средняя цена: <span id="portfolioAvg">$75,216</span><br>
-                        Инвестировано: <span id="portfolioInvested">$75,723,861</span>
+                        Количество: <span id="portfolioBtc">1241.16 BTC</span><br>
+                        Средняя цена: <span id="portfolioAvg">$76,724</span><br>
+                        Инвестировано: <span id="portfolioInvested">$95,226,651</span>
                     </div>
                     <div class="portfolio-details" id="btcPositions" style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px"></div>
                 </div>
             </section>
+
+            <div id="btcCreditNote" style="margin:0 0 18px;padding:12px 16px;border:1px solid var(--accent-red);border-left-width:4px;border-radius:8px;background:rgba(255,71,87,0.08);color:var(--text-secondary);font-size:13px;line-height:1.5"></div>
 
             <section class="score-section">
                 <div class="score-header">
@@ -481,7 +483,7 @@
     // STATIC DATA (for non-crypto tabs)
     // ================================================================
     const DATA = {
-        FAB: { Depo: 30000000, bonds: 81275118, stocks: 7024490, btcQty: 885.91, bondsBreakdown: [
+        FAB: { Depo: 30000000, bonds: 81275118, stocks: 7024490, btcQty: 1120.32, btcCredit: 20000000, bondsBreakdown: [
             { name: "FAB_IY_Joseph", value: 45695516 },
             { name: "FAB_IY_Oliver", value: 30466307 },
             { name: "FAB_AK_Joseph", value: 5113295 }
@@ -589,7 +591,7 @@
     const EMMAR_FACT = EMMAR.reduce((a, r) => a + r.fact, 0);
     const EMMAR_DEBT = EMMAR.reduce((a, r) => a + r.debt, 0);
     const POT_TOTAL = 72220000;
-    const GRAND_TOTAL = 528472092;
+    const GRAND_TOTAL = 547974882;
     const COLORS = ["#4a9eff", "#00d26a", "#f7931a", "#bc8cff", "#f778ba", "#ff4757", "#ffc107"];
 
     // Aggregates
@@ -1123,11 +1125,21 @@
             document.getElementById('portfolioValue').textContent = formatUSD(data.portfolio.current_value);
             document.getElementById('portfolioBtc').textContent = data.portfolio.btc_amount + ' BTC';
             if (data.portfolio.positions) {
-                document.getElementById('btcPositions').innerHTML = data.portfolio.positions.map(p =>
+                const posHtml = data.portfolio.positions.map(p =>
                     p.name + ': <b>' + p.qty + ' BTC</b> &mdash; ' + formatUSD(p.current_value) +
                     ' <span style="color:' + (p.pnl_usd >= 0 ? 'var(--accent-green)' : 'var(--accent-red)') + '">(' +
-                    formatPercent(p.pnl_percent) + ')</span>'
+                    formatPercent(p.pnl_percent) + ')</span>' +
+                    (p.credit ? '<br><span style="color:var(--accent-red)">&#9888; куплено на кредитные средства &mdash; кредит перед FAB ' + formatUSD(p.credit) + '</span>' : '')
                 ).join('<br>');
+                document.getElementById('btcPositions').innerHTML = posHtml;
+                const totalCredit = data.portfolio.positions.reduce((a, p) => a + (p.credit || 0), 0);
+                const cn = document.getElementById('btcCreditNote');
+                if (cn) {
+                    cn.innerHTML = totalCredit
+                        ? '&#9888; Часть позиции по BTC куплена на заёмные средства: <b>кредит перед FAB ' + formatUSD(totalCredit) + '</b>. ' +
+                          'В итог портфеля этот долг не вычитается &mdash; показаны активы.'
+                        : '';
+                }
             }
             document.getElementById('portfolioAvg').textContent = formatUSD(data.portfolio.avg_price);
             document.getElementById('portfolioInvested').textContent = formatUSD(data.portfolio.invested);

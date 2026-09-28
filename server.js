@@ -1,6 +1,6 @@
 /**
  * BTC Dashboard v3.5 — Node.js Backend
- * Portfolio: 1006.75 BTC (885.91 FAB ETF @ $77,411 + 26 холодный кошелёк @ $44,666 + 94.84 Фонды_ACM @ $62,999)
+ * Portfolio: 1241.16 BTC (1120.32 FAB ETF/IBIT @ $78,622 + 26 холодный кошелёк @ $44,666 + 94.84 Фонды_ACM @ $62,999)
  * Auto-updates from CoinGecko, Alternative.me, Binance APIs
  */
 
@@ -17,11 +17,11 @@ app.use(express.static(path.join(__dirname, 'static')));
 // ─── Portfolio Config ───
 // Позиции по BTC: ETF у FAB + холодный кошелёк + купленное через Фонды_ACM
 const BTC_POSITIONS = [
-    { name: 'FAB (ETF на BTC)',  qty: 885.91, avg_price: 77411, invested: 68578923 },
+    { name: 'FAB (ETF на BTC, IBIT)', qty: 1120.32, avg_price: 78622, invested: 88081713, credit: 20000000 },
     { name: 'Холодный кошелек',  qty: 26,     avg_price: 44666, invested: 1170108 },
     { name: 'Фонды_ACM',         qty: 94.84,  avg_price: 62999, invested: 5974830 }
 ];
-const PORTFOLIO_BTC = +BTC_POSITIONS.reduce((a, p) => a + p.qty, 0).toFixed(2);      // 1006.75 BTC
+const PORTFOLIO_BTC = +BTC_POSITIONS.reduce((a, p) => a + p.qty, 0).toFixed(2);      // 1241.16 BTC
 const PORTFOLIO_INVESTED = BTC_POSITIONS.reduce((a, p) => a + p.invested, 0);        // фактически вложено
 const PORTFOLIO_AVG_PRICE = Math.round(PORTFOLIO_INVESTED / PORTFOLIO_BTC);
 
@@ -509,7 +509,7 @@ async function fetchAllDataLocal() {
             positions: BTC_POSITIONS.map(p => {
                 const value = p.qty * price;
                 return {
-                    name: p.name, qty: p.qty, avg_price: p.avg_price, invested: p.invested,
+                    name: p.name, qty: p.qty, avg_price: p.avg_price, invested: p.invested, credit: p.credit || 0,
                     current_value: Math.round(value),
                     pnl_usd: Math.round(value - p.invested),
                     pnl_percent: +(((value / p.invested) - 1) * 100).toFixed(2)
