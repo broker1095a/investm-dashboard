@@ -321,10 +321,6 @@
                 <div class="bond-table-wrap"><table class="bond-table"><thead><tr><th>ISIN (код)</th><th>ISIN (название)</th><th>Maturity</th><th>Days</th><th>Купон net, % год.</th><th>Accr. Int. 4 мес 26</th><th>Mkt. Value 30.04.26</th><th>Cost Value</th><th>P&amp;L (price), USD</th><th>P&amp;L (price), %</th><th>Weight</th></tr></thead><tbody id="fabJosephTable"></tbody></table></div>
             </div>
             <div class="table-card">
-                <h3>&#128200; FAB_IY_Oliver &mdash; облигации <span style="color:var(--text-secondary);font-weight:400;font-size:13px">Mkt. Value 30.04.26</span></h3>
-                <div class="bond-table-wrap"><table class="bond-table"><thead><tr><th>ISIN (код)</th><th>ISIN (название)</th><th>Maturity</th><th>Days</th><th>Купон net, % год.</th><th>Accr. Int. 4 мес 26</th><th>Mkt. Value 30.04.26</th><th>Cost Value</th><th>P&amp;L (price), USD</th><th>P&amp;L (price), %</th><th>Weight</th></tr></thead><tbody id="fabOliverTable"></tbody></table></div>
-            </div>
-            <div class="table-card">
                 <h3>&#128200; FAB_AK_Joseph &mdash; облигации <span style="color:var(--text-secondary);font-weight:400;font-size:13px">Mkt. Value 30.04.26</span></h3>
                 <div class="bond-table-wrap"><table class="bond-table"><thead><tr><th>ISIN (код)</th><th>ISIN (название)</th><th>Maturity</th><th>Days</th><th>Купон net, % год.</th><th>Accr. Int. 4 мес 26</th><th>Mkt. Value 30.04.26</th><th>Cost Value</th><th>P&amp;L (price), USD</th><th>P&amp;L (price), %</th><th>Weight</th></tr></thead><tbody id="fabAkJosephTable"></tbody></table></div>
             </div>
@@ -487,9 +483,8 @@
     // ================================================================
     const DATA = {
         FAB: { Depo: 8315335, bonds: 27806295, stocks: 14971071, btcQty: 1717.65, bondsBreakdown: [
-            { name: "FAB_IY_Joseph", value: 45695516 },
-            { name: "FAB_IY_Oliver", value: 30466307 },
-            { name: "FAB_AK_Joseph", value: 5113295 }
+            { name: "FAB_IY_Joseph", value: 22753000 },
+            { name: "FAB_AK_Joseph", value: 5050295 }
         ]},
         "Холодный кошелек": { btcQty: 26 },
         ENBD: { Depo: 0 },
@@ -524,6 +519,7 @@
         { isin: 'USJ57160DY66', name: 'Nissan Motor Co 4.345 2027',                maturity: '17-Sep-2027', days:    478, coupon_net: 4.2, accr:  14166, mkt:   983020, cost:    902713, pnl_usd:   80307, pnl_pct:  8.90, weight:  2.1 },
     ]};
 
+    // Портфолио FAB_IY_Oliver закрыто (20.10.2026) — данные оставлены как история, не выводятся
     const FAB_IY_OLIVER = { total_mkt: 30466307, total_accr: 558485, total_cost: 29860041, total_pnl_usd: 606265, total_pnl_pct: 2.03, coupon_avg: 5.2, bonds: [
         { isin: 'FABS3US',      name: 'FAB MENA Plus FMP Series 3 USD',           maturity: '~May-2028',   days:    722, coupon_net: 5.3, accr: 330600, mkt: 17764808, cost: 17400000, pnl_usd:  364808, pnl_pct:  2.10, weight: 58.3 },
         { isin: 'XS3266600328', name: 'BLACK SEA TRADE AND DEVE 5',               maturity: '27-Apr-2032', days:   2162, coupon_net: 4.4, accr:  22822, mkt:  1421767, cost:  1400000, pnl_usd:   21767, pnl_pct:  1.55, weight:  4.7 },
@@ -814,7 +810,6 @@
         document.getElementById("bondsTable").innerHTML = h;
         // FAB sub-portfolio bond tables
         renderBondPortfolioTable("fabJosephTable", FAB_IY_JOSEPH);
-        renderBondPortfolioTable("fabOliverTable", FAB_IY_OLIVER);
         renderBondPortfolioTable("fabAkJosephTable", FAB_AK_JOSEPH);
         // ACM bond analytics card
         document.getElementById("acmBondCard").innerHTML =
