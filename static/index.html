@@ -372,7 +372,6 @@
                 </div>
             </section>
 
-            <div id="btcCreditNote" style="margin:0 0 18px;padding:12px 16px;border:1px solid var(--accent-red);border-left-width:4px;border-radius:8px;background:rgba(255,71,87,0.08);color:var(--text-secondary);font-size:13px;line-height:1.5"></div>
 
             <section class="score-section">
                 <div class="score-header">
@@ -483,7 +482,7 @@
     // STATIC DATA (for non-crypto tabs)
     // ================================================================
     const DATA = {
-        FAB: { Depo: 6345000, bonds: 54709619, stocks: 7024490, btcQty: 1717.65, btcCredit: 20000000, bondsBreakdown: [
+        FAB: { Depo: 9215335, bonds: 22753000, stocks: 14971071, btcQty: 1717.65, bondsBreakdown: [
             { name: "FAB_IY_Joseph", value: 45695516 },
             { name: "FAB_IY_Oliver", value: 30466307 },
             { name: "FAB_AK_Joseph", value: 5113295 }
@@ -504,8 +503,8 @@
     // ================================================================
     // BOND ANALYTICS DATA
     // ================================================================
-    const FAB_IY_JOSEPH = { total_mkt: 45695516, total_accr: 798242, total_cost: 44030999, total_pnl_usd: 1664517, total_pnl_pct: 3.78, coupon_avg: 5.0, bonds: [
-        { isin: 'IE00BK6JPR27', name: 'FAB MENA Plus FMP Series 1 USD',          maturity: '15-Nov-2026', days:    172, coupon_net: 5.1, accr: 408478, mkt: 22922610, cost: 22200000, pnl_usd:  722610, pnl_pct:  3.26, weight: 50.4 },
+    const FAB_IY_JOSEPH = { total_mkt: 45525906, total_accr: 798242, total_cost: 44030999, total_pnl_usd: 1494907, total_pnl_pct: 3.40, coupon_avg: 5.0, bonds: [
+        { isin: 'IE00BK6JPR27', name: 'FAB MENA Plus FMP Series 1 USD',          maturity: 'Aug 2028', maturityDate: '2028-08-15', coupon_net: 5.1, accr: 408478, mkt: 22753000, cost: 22200000, pnl_usd:  553000, pnl_pct:  2.49, weight: 50.0 },
         { isin: 'IE00B8JDQ960', name: 'PIMCO GIS Income Fund USD Ins',            maturity: 'Open-ended',  days:   null, coupon_net: 5.7, accr: 103676, mkt:  5150801, cost:  5013125, pnl_usd:  137676, pnl_pct:  2.75, weight: 11.4 },
         { isin: 'AEC01476F247', name: 'FAB MENA Plus FMP2 ADV DIS USD',           maturity: '31-Jul-2027', days:    499, coupon_net: 5.1, accr:  73333, mkt:  4084292, cost:  4000000, pnl_usd:   84292, pnl_pct:  2.11, weight:  9.1 },
         { isin: 'IE000FWPFS42', name: 'FAB MENA Plus FMP Series 1 AED DISD',      maturity: '15-Nov-2026', days:    172, coupon_net: 5.1, accr:  55098, mkt:  3089829, cost:  2994827, pnl_usd:   95002, pnl_pct:  3.17, weight:  6.8 },
@@ -741,10 +740,23 @@
         pTable("liqTable", depoP, tDepo);
     }
 
+    // Дней до погашения: если у бумаги указана maturityDate — считаем от сегодняшней
+    // даты (значение обновляется само каждый день), иначе берём зафиксированное b.days.
+    function bondDaysLeft(b) {
+        if (b.maturityDate) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return Math.ceil((new Date(b.maturityDate + 'T00:00:00') - today) / 86400000);
+        }
+        return (b.days === null || b.days === undefined) ? null : b.days;
+    }
+
     function renderBondPortfolioTable(tbId, portfolio) {
         let h = "";
         for (let b of portfolio.bonds) {
-            const daysStr = b.days !== null ? b.days.toLocaleString() : '—';
+            const d = bondDaysLeft(b);
+            const daysStr = d !== null ? d.toLocaleString() : '—';
+            const w = portfolio.total_mkt ? (b.mkt / portfolio.total_mkt * 100) : b.weight;
             const pnlUsdStr = '<span class="' + (b.pnl_usd >= 0 ? 'pnl-pos' : 'pnl-neg') + '">' + (b.pnl_usd >= 0 ? '+' : '') + fmt(b.pnl_usd) + '</span>';
             const pnlPctStr = '<span class="' + (b.pnl_pct >= 0 ? 'pnl-pos' : 'pnl-neg') + '">' + (b.pnl_pct >= 0 ? '+' : '') + b.pnl_pct.toFixed(2) + '%</span>';
             h += '<tr>'
@@ -758,7 +770,7 @@
                + '<td>$' + fmt(b.cost) + '</td>'
                + '<td>' + pnlUsdStr + '</td>'
                + '<td>' + pnlPctStr + '</td>'
-               + '<td>' + b.weight.toFixed(1) + '%</td>'
+               + '<td>' + w.toFixed(1) + '%</td>'
                + '</tr>';
         }
         const totalPnlUsdStr = '<span class="' + (portfolio.total_pnl_usd >= 0 ? 'pnl-pos' : 'pnl-neg') + '">' + (portfolio.total_pnl_usd >= 0 ? '+' : '') + fmt(portfolio.total_pnl_usd) + '</span>';
@@ -1126,21 +1138,11 @@
             document.getElementById('portfolioValue').textContent = formatUSD(data.portfolio.current_value);
             document.getElementById('portfolioBtc').textContent = data.portfolio.btc_amount + ' BTC';
             if (data.portfolio.positions) {
-                const posHtml = data.portfolio.positions.map(p =>
+                document.getElementById('btcPositions').innerHTML = data.portfolio.positions.map(p =>
                     p.name + ': <b>' + p.qty + ' BTC</b> &mdash; ' + formatUSD(p.current_value) +
                     ' <span style="color:' + (p.pnl_usd >= 0 ? 'var(--accent-green)' : 'var(--accent-red)') + '">(' +
-                    formatPercent(p.pnl_percent) + ')</span>' +
-                    (p.credit ? '<br><span style="color:var(--accent-red)">&#9888; куплено на кредитные средства &mdash; кредит перед FAB ' + formatUSD(p.credit) + '</span>' : '')
+                    formatPercent(p.pnl_percent) + ')</span>'
                 ).join('<br>');
-                document.getElementById('btcPositions').innerHTML = posHtml;
-                const totalCredit = data.portfolio.positions.reduce((a, p) => a + (p.credit || 0), 0);
-                const cn = document.getElementById('btcCreditNote');
-                if (cn) {
-                    cn.innerHTML = totalCredit
-                        ? '&#9888; Часть позиции по BTC куплена на заёмные средства: <b>кредит перед FAB ' + formatUSD(totalCredit) + '</b>. ' +
-                          'В итог портфеля этот долг не вычитается &mdash; показаны активы.'
-                        : '';
-                }
             }
             document.getElementById('portfolioAvg').textContent = formatUSD(data.portfolio.avg_price);
             document.getElementById('portfolioInvested').textContent = formatUSD(data.portfolio.invested);

@@ -17,7 +17,7 @@ app.use(express.static(path.join(__dirname, 'static')));
 // ─── Portfolio Config ───
 // Позиции по BTC: ETF у FAB + холодный кошелёк + купленное через Фонды_ACM
 const BTC_POSITIONS = [
-    { name: 'FAB (ETF на BTC, IBIT)', qty: 1717.65, avg_price: 80518, invested: 138302212, credit: 20000000 },
+    { name: 'FAB (ETF на BTC, IBIT)', qty: 1717.65, avg_price: 80518, invested: 138302212 },
     { name: 'Холодный кошелек',  qty: 26,     avg_price: 44666, invested: 1170108 },
     { name: 'Фонды_ACM',         qty: 94.84,  avg_price: 62999, invested: 5974830 }
 ];
@@ -509,7 +509,7 @@ async function fetchAllDataLocal() {
             positions: BTC_POSITIONS.map(p => {
                 const value = p.qty * price;
                 return {
-                    name: p.name, qty: p.qty, avg_price: p.avg_price, invested: p.invested, credit: p.credit || 0,
+                    name: p.name, qty: p.qty, avg_price: p.avg_price, invested: p.invested,
                     current_value: Math.round(value),
                     pnl_usd: Math.round(value - p.invested),
                     pnl_percent: +(((value / p.invested) - 1) * 100).toFixed(2)
