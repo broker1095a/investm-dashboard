@@ -71,6 +71,36 @@ function fetchJSON(url, timeout = 10000) {
     });
 }
 
+// JSON с браузерным User-Agent: Yahoo отбивает запросы от нестандартных клиентов
+// (на Render это видно особенно), но Accept должен остаться json — иначе отдаст HTML.
+function fetchQuoteJSON(url, timeout = 10000, redirectsLeft = 3) {
+    return new Promise((resolve, reject) => {
+        const lib = url.startsWith('https') ? https : http;
+        const req = lib.get(url, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36',
+                'Accept': 'application/json,text/plain,*/*',
+                'Accept-Language': 'en-US,en;q=0.9'
+            },
+            timeout: timeout
+        }, (res) => {
+            if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location && redirectsLeft > 0) {
+                res.resume();
+                const next = new URL(res.headers.location, url).toString();
+                return resolve(fetchQuoteJSON(next, timeout, redirectsLeft - 1));
+            }
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => {
+                try { resolve(JSON.parse(data)); }
+                catch (e) { reject(new Error('HTTP ' + res.statusCode + ', parse error: ' + data.substring(0, 80))); }
+            });
+        });
+        req.on('error', reject);
+        req.on('timeout', () => { req.destroy(); reject(new Error('Timeout')); });
+    });
+}
+
 function fetchText(url, timeout = 10000, redirectsLeft = 3) {
     return new Promise((resolve, reject) => {
         const lib = url.startsWith('https') ? https : http;
@@ -103,7 +133,7 @@ async function fetchStockQuote(ticker, fallbackPrice) {
     try {
         const url = 'https://query1.finance.yahoo.com/v8/finance/chart/' + ticker +
                     '?includePrePost=true&interval=1m&range=1d';
-        const d = await fetchJSON(url, 8000);
+        const d = await fetchQuoteJSON(url, 8000);
         const r = d?.chart?.result?.[0];
         if (r) {
             const ts = r.timestamp || [];
