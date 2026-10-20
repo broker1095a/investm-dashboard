@@ -25,6 +25,15 @@ const PORTFOLIO_BTC = +BTC_POSITIONS.reduce((a, p) => a + p.qty, 0).toFixed(2); 
 const PORTFOLIO_INVESTED = BTC_POSITIONS.reduce((a, p) => a + p.invested, 0);        // фактически вложено
 const PORTFOLIO_AVG_PRICE = Math.round(PORTFOLIO_INVESTED / PORTFOLIO_BTC);
 
+// ─── Акции FAB (переоцениваются по рынку) ───
+// invested — фактически вложенные деньги из выписки; avg_price — средняя цена покупки.
+const FAB_STOCKS = [
+    { ticker: 'NBIS', name: 'Nebius Group',       qty:  7900, avg_price: 181.36, invested: 1432744 },
+    { ticker: 'STX',  name: 'Seagate Technology', qty: 12800, avg_price: 672.06, invested: 8602412 },
+    { ticker: 'SKHY', name: 'SK Hynix',           qty: 34500, avg_price: 143.07, invested: 4935915 }
+];
+const FAB_STOCKS_INVESTED = FAB_STOCKS.reduce((a, p) => a + p.invested, 0);
+
 // ─── Cache ───
 let cache = {
     data: null,
@@ -60,6 +69,95 @@ function fetchJSON(url, timeout = 10000) {
         req.on('error', reject);
         req.on('timeout', () => { req.destroy(); reject(new Error('Timeout')); });
     });
+}
+
+function fetchText(url, timeout = 10000, redirectsLeft = 3) {
+    return new Promise((resolve, reject) => {
+        const lib = url.startsWith('https') ? https : http;
+        const req = lib.get(url, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml'
+            },
+            timeout: timeout
+        }, (res) => {
+            if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location && redirectsLeft > 0) {
+                res.resume();
+                const next = new URL(res.headers.location, url).toString();
+                return resolve(fetchText(next, timeout, redirectsLeft - 1));
+            }
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => resolve(data));
+        });
+        req.on('error', reject);
+        req.on('timeout', () => { req.destroy(); reject(new Error('Timeout')); });
+    });
+}
+
+// Котировка одной бумаги.
+// 1) Yahoo с includePrePost — берём последнюю сделку, включая премаркет/постмаркет.
+// 2) Если не вышло — finviz, цена закрытия.
+// 3) Если и это не вышло — цена покупки, позиция помечается как не переоценённая.
+async function fetchStockQuote(ticker, fallbackPrice) {
+    try {
+        const url = 'https://query1.finance.yahoo.com/v8/finance/chart/' + ticker +
+                    '?includePrePost=true&interval=1m&range=1d';
+        const d = await fetchJSON(url, 8000);
+        const r = d?.chart?.result?.[0];
+        if (r) {
+            const ts = r.timestamp || [];
+            const closes = r.indicators?.quote?.[0]?.close || [];
+            let price = null, at = null;
+            for (let i = closes.length - 1; i >= 0; i--) {
+                if (closes[i] != null) { price = closes[i]; at = ts[i]; break; }
+            }
+            if (price == null) price = r.meta?.regularMarketPrice ?? null;
+            if (price != null) {
+                const per = r.meta?.currentTradingPeriod;
+                let session = 'regular';
+                if (per && at) {
+                    if (at < per.regular.start) session = 'pre';
+                    else if (at >= per.post.start) session = 'post';
+                }
+                return { price, source: 'yahoo', session };
+            }
+        }
+    } catch (e) {
+        console.error('[Stocks] Yahoo ' + ticker + ': ' + e.message);
+    }
+    try {
+        const html = await fetchText('https://finviz.com/quote.ashx?t=' + ticker, 8000);
+        const m = html.match(/"lastClose":([0-9.]+)/);
+        if (m) return { price: parseFloat(m[1]), source: 'finviz', session: 'close' };
+    } catch (e) {
+        console.error('[Stocks] finviz ' + ticker + ': ' + e.message);
+    }
+    return { price: fallbackPrice, source: 'cost', session: null };
+}
+
+async function fetchFabStocks() {
+    const positions = await Promise.all(FAB_STOCKS.map(async (p) => {
+        const q = await fetchStockQuote(p.ticker, p.avg_price);
+        const value = p.qty * q.price;
+        return {
+            ticker: p.ticker, name: p.name, qty: p.qty, avg_price: p.avg_price, invested: p.invested,
+            price: +q.price.toFixed(2), source: q.source, session: q.session,
+            value: Math.round(value),
+            pnl_usd: Math.round(value - p.invested),
+            pnl_percent: +(((value / p.invested) - 1) * 100).toFixed(2)
+        };
+    }));
+    const total_value = positions.reduce((a, p) => a + p.value, 0);
+    return {
+        positions,
+        total_qty: FAB_STOCKS.reduce((a, p) => a + p.qty, 0),
+        total_invested: FAB_STOCKS_INVESTED,
+        total_value,
+        total_pnl_usd: total_value - FAB_STOCKS_INVESTED,
+        total_pnl_percent: +(((total_value / FAB_STOCKS_INVESTED) - 1) * 100).toFixed(2),
+        live: positions.some(p => p.source !== 'cost')
+    };
 }
 
 async function safeFetch(url, timeout = 10000) {
@@ -501,8 +599,14 @@ async function fetchAllDataLocal() {
     const pnlUsd = portfolioValue - PORTFOLIO_INVESTED;
     const pnlPct = PORTFOLIO_INVESTED > 0 ? ((portfolioValue / PORTFOLIO_INVESTED) - 1) * 100 : 0;
 
+    const fabStocks = await fetchFabStocks().catch(e => {
+        console.error('[Stocks] ' + e.message);
+        return null;
+    });
+
     const result = {
         price: priceData,
+        fab_stocks: fabStocks,
         portfolio: {
             btc_amount: PORTFOLIO_BTC, avg_price: PORTFOLIO_AVG_PRICE, invested: PORTFOLIO_INVESTED,
             current_value: Math.round(portfolioValue), pnl_usd: Math.round(pnlUsd), pnl_percent: +pnlPct.toFixed(2),

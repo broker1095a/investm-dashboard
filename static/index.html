@@ -346,6 +346,10 @@
                 <h3>Детализация</h3>
                 <table><thead><tr><th>Partner</th><th class="align-right">Сумма ($)</th><th class="align-right">Доля</th><th class="pct-bar-cell"></th></tr></thead><tbody id="stocksTable"></tbody></table>
             </div>
+            <div class="table-card">
+                <h3>&#128202; FAB &mdash; детализация по акциям <span id="fabStocksSrc" style="color:var(--text-secondary);font-weight:400;font-size:13px"></span></h3>
+                <div class="bond-table-wrap"><table class="bond-table"><thead><tr><th>Бумага</th><th>Тикер</th><th>Кол-во акций</th><th>Средняя цена покупки, $</th><th>Текущая цена, $</th><th>Итого сумма, $</th><th>P&amp;L, USD</th><th>P&amp;L, %</th><th>Weight</th></tr></thead><tbody id="fabStocksTable"></tbody></table></div>
+            </div>
         </div>
 
         <!-- ======= CRYPTO TAB (existing BTC dashboard - unchanged logic) ======= -->
@@ -482,7 +486,7 @@
     // STATIC DATA (for non-crypto tabs)
     // ================================================================
     const DATA = {
-        FAB: { Depo: 9215335, bonds: 22753000, stocks: 14971071, btcQty: 1717.65, bondsBreakdown: [
+        FAB: { Depo: 9215335, bonds: 27806295, stocks: 14971071, btcQty: 1717.65, bondsBreakdown: [
             { name: "FAB_IY_Joseph", value: 45695516 },
             { name: "FAB_IY_Oliver", value: 30466307 },
             { name: "FAB_AK_Joseph", value: 5113295 }
@@ -823,6 +827,49 @@
             '<div class="acm-row"><span class="acm-label">Дата погашения</span><span class="acm-value">'+ACM_BOND_DETAIL.maturity+'</span></div>';
     }
 
+    // Живые данные по акциям FAB (приходят из /api/all). Пока их нет — считаем по DATA.
+    let fabStocksData = null;
+
+    function renderFabStocksTable() {
+        const tb = document.getElementById("fabStocksTable");
+        if (!tb) return;
+        const src = document.getElementById("fabStocksSrc");
+        if (!fabStocksData) {
+            tb.innerHTML = '<tr><td colspan="9" style="color:var(--text-secondary)">Загрузка котировок...</td></tr>';
+            return;
+        }
+        const d = fabStocksData;
+        const srcNames = { yahoo: 'Yahoo Finance', finviz: 'finviz (цена закрытия)', cost: 'цена покупки — котировка недоступна' };
+        const sessNames = { pre: 'premarket', post: 'postmarket', regular: 'основная сессия', close: 'закрытие' };
+        if (src) {
+            const uniq = [...new Set(d.positions.map(p => srcNames[p.source] || p.source))];
+            const sess = [...new Set(d.positions.map(p => sessNames[p.session]).filter(Boolean))];
+            src.textContent = 'источник: ' + uniq.join(', ') + (sess.length ? ' · ' + sess.join(', ') : '');
+        }
+        let h = "";
+        for (const p of d.positions) {
+            const w = d.total_value ? (p.value / d.total_value * 100) : 0;
+            const pnlU = '<span class="' + (p.pnl_usd >= 0 ? 'pnl-pos' : 'pnl-neg') + '">' + (p.pnl_usd >= 0 ? '+' : '') + fmt(p.pnl_usd) + '</span>';
+            const pnlP = '<span class="' + (p.pnl_percent >= 0 ? 'pnl-pos' : 'pnl-neg') + '">' + (p.pnl_percent >= 0 ? '+' : '') + p.pnl_percent.toFixed(2) + '%</span>';
+            h += '<tr>'
+               + '<td>' + p.name + '</td>'
+               + '<td>' + p.ticker + '</td>'
+               + '<td>' + p.qty.toLocaleString("en-US") + '</td>'
+               + '<td>' + p.avg_price.toFixed(2) + '</td>'
+               + '<td>' + p.price.toFixed(2) + (p.source === 'cost' ? ' <span style="color:var(--accent-red)">&#9888;</span>' : '') + '</td>'
+               + '<td>$' + fmt(p.value) + '</td>'
+               + '<td>' + pnlU + '</td>'
+               + '<td>' + pnlP + '</td>'
+               + '<td>' + w.toFixed(1) + '%</td>'
+               + '</tr>';
+        }
+        const tU = '<span class="' + (d.total_pnl_usd >= 0 ? 'pnl-pos' : 'pnl-neg') + '">' + (d.total_pnl_usd >= 0 ? '+' : '') + fmt(d.total_pnl_usd) + '</span>';
+        const tP = '<span class="' + (d.total_pnl_percent >= 0 ? 'pnl-pos' : 'pnl-neg') + '">' + (d.total_pnl_percent >= 0 ? '+' : '') + d.total_pnl_percent.toFixed(2) + '%</span>';
+        h += '<tr class="total-row"><td>ИТОГО / TOTAL</td><td></td><td>' + d.total_qty.toLocaleString("en-US") + '</td><td>&mdash;</td><td>&mdash;</td>'
+           + '<td>$' + fmt(d.total_value) + '</td><td>' + tU + '</td><td>' + tP + '</td><td>100%</td></tr>';
+        tb.innerHTML = h;
+    }
+
     function renderStocksTab() {
         pKpi("stocksKpi", "Stocks total", stocksP, tStocks, getPortfolioTotal());
         mkDoughnut("stocksDoughnut", Object.keys(stocksP), Object.values(stocksP), ["#bc8cff", "#f7931a", "#ff4757", "#4a9eff", "#ffc107"], tStocks);
@@ -843,6 +890,7 @@
         }
         h += '<tr class="total-row"><td>TOTAL</td><td class="align-right">'+fU(tStocks)+'</td><td class="align-right">100%</td><td></td></tr>';
         document.getElementById("stocksTable").innerHTML = h;
+        renderFabStocksTable();
     }
 
     function renderPropertyTab() {
@@ -1129,6 +1177,13 @@
             // Update dynamic crypto value for portfolio tab
             tCrypto = data.portfolio.current_value;
 
+            // Акции FAB переоцениваются по рынку: подменяем статическую сумму из DATA
+            if (data.fab_stocks && data.fab_stocks.total_value) {
+                fabStocksData = data.fab_stocks;
+                tStocks = tStocks - stocksP["FAB"] + data.fab_stocks.total_value;
+                stocksP["FAB"] = data.fab_stocks.total_value;
+            }
+
             // Price
             document.getElementById('btcPrice').textContent = formatUSD(data.price.current);
             document.getElementById('volume24h').textContent = formatBillion(data.price.volume_24h);
@@ -1196,6 +1251,9 @@
             // If portfolio tab was already rendered, re-render it with updated crypto value
             if (tabRendered['portfolio']) {
                 renderPortfolioTab();
+            }
+            if (tabRendered['stocks']) {
+                renderStocksTab();
             }
         } catch (err) {
             console.error('Load error:', err);
