@@ -334,6 +334,10 @@
         <!-- ======= STOCKS TAB ======= -->
         <div id="tab-stocks" class="tab-content">
             <div class="kpi-row" id="stocksKpi"></div>
+            <div style="margin:0 0 18px;padding:12px 16px;border:1px solid var(--accent-red);border-left-width:4px;border-radius:8px;background:rgba(255,71,87,0.08);color:var(--text-secondary);font-size:13px;line-height:1.5">
+                &#9888; Для покупки акций использован <b style="color:var(--accent-red)">кредит FAB на сумму $11,980,989</b>.
+                Эта сумма не вычитается из итогов &mdash; в дэшборде показаны инвестиции.
+            </div>
             <div class="charts-grid">
                 <div class="chart-card"><h3>Акции по Partner</h3><div class="chart-wrapper"><canvas id="stocksDoughnut"></canvas></div></div>
                 <div class="chart-card"><h3>Объём</h3><div class="chart-wrapper"><canvas id="stocksBar"></canvas></div></div>
@@ -341,10 +345,6 @@
             <div class="table-card">
                 <h3>Детализация</h3>
                 <table><thead><tr><th>Partner</th><th class="align-right">Сумма ($)</th><th class="align-right">Доля</th><th class="pct-bar-cell"></th></tr></thead><tbody id="stocksTable"></tbody></table>
-            </div>
-            <div style="margin:0 0 18px;padding:12px 16px;border:1px solid var(--border);border-left:4px solid var(--accent-blue);border-radius:8px;background:rgba(74,158,255,0.07);color:var(--text-secondary);font-size:13px;line-height:1.5">
-                &#8505; Для покупки акций использован <b>кредит FAB на сумму $11,980,989</b>.
-                Эта сумма не вычитается из итогов &mdash; в дэшборде показаны инвестиции.
             </div>
             <div class="table-card">
                 <h3>&#128202; FAB &mdash; детализация по акциям <span id="fabStocksSrc" style="color:var(--text-secondary);font-weight:400;font-size:13px"></span></h3>
