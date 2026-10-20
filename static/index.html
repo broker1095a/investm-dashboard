@@ -348,7 +348,7 @@
             </div>
             <div class="table-card">
                 <h3>&#128202; FAB &mdash; детализация по акциям <span id="fabStocksSrc" style="color:var(--text-secondary);font-weight:400;font-size:13px"></span></h3>
-                <div class="bond-table-wrap"><table class="bond-table"><thead><tr><th>Бумага</th><th>Тикер</th><th>Кол-во акций</th><th>Средняя цена покупки, $</th><th>Текущая цена, $</th><th>Итого сумма, $</th><th>P&amp;L, USD</th><th>P&amp;L, %</th><th>Weight</th></tr></thead><tbody id="fabStocksTable"></tbody></table></div>
+                <div class="bond-table-wrap"><table class="bond-table"><thead><tr><th>Бумага</th><th>Тикер</th><th>Кол-во акций</th><th>Средняя цена покупки, $</th><th>Итого сумма покупки, $</th><th>Текущая цена, $</th><th>Текущая сумма, $</th><th>P&amp;L, USD</th><th>P&amp;L, %</th><th>Weight</th></tr></thead><tbody id="fabStocksTable"></tbody></table></div>
             </div>
         </div>
 
@@ -835,7 +835,7 @@
         if (!tb) return;
         const src = document.getElementById("fabStocksSrc");
         if (!fabStocksData) {
-            tb.innerHTML = '<tr><td colspan="9" style="color:var(--text-secondary)">Загрузка котировок...</td></tr>';
+            tb.innerHTML = '<tr><td colspan="10" style="color:var(--text-secondary)">Загрузка котировок...</td></tr>';
             return;
         }
         const d = fabStocksData;
@@ -856,6 +856,7 @@
                + '<td>' + p.ticker + '</td>'
                + '<td>' + p.qty.toLocaleString("en-US") + '</td>'
                + '<td>' + p.avg_price.toFixed(2) + '</td>'
+               + '<td>$' + fmt(p.invested) + '</td>'
                + '<td>' + p.price.toFixed(2) + (p.source === 'cost' ? ' <span style="color:var(--accent-red)">&#9888;</span>' : '') + '</td>'
                + '<td>$' + fmt(p.value) + '</td>'
                + '<td>' + pnlU + '</td>'
@@ -865,7 +866,8 @@
         }
         const tU = '<span class="' + (d.total_pnl_usd >= 0 ? 'pnl-pos' : 'pnl-neg') + '">' + (d.total_pnl_usd >= 0 ? '+' : '') + fmt(d.total_pnl_usd) + '</span>';
         const tP = '<span class="' + (d.total_pnl_percent >= 0 ? 'pnl-pos' : 'pnl-neg') + '">' + (d.total_pnl_percent >= 0 ? '+' : '') + d.total_pnl_percent.toFixed(2) + '%</span>';
-        h += '<tr class="total-row"><td>ИТОГО / TOTAL</td><td></td><td>' + d.total_qty.toLocaleString("en-US") + '</td><td>&mdash;</td><td>&mdash;</td>'
+        h += '<tr class="total-row"><td>ИТОГО / TOTAL</td><td></td><td>' + d.total_qty.toLocaleString("en-US") + '</td><td>&mdash;</td>'
+           + '<td>$' + fmt(d.total_invested) + '</td><td>&mdash;</td>'
            + '<td>$' + fmt(d.total_value) + '</td><td>' + tU + '</td><td>' + tP + '</td><td>100%</td></tr>';
         tb.innerHTML = h;
     }
