@@ -342,6 +342,10 @@
                 <h3>Детализация</h3>
                 <table><thead><tr><th>Partner</th><th class="align-right">Сумма ($)</th><th class="align-right">Доля</th><th class="pct-bar-cell"></th></tr></thead><tbody id="stocksTable"></tbody></table>
             </div>
+            <div style="margin:0 0 18px;padding:12px 16px;border:1px solid var(--border);border-left:4px solid var(--accent-blue);border-radius:8px;background:rgba(74,158,255,0.07);color:var(--text-secondary);font-size:13px;line-height:1.5">
+                &#8505; Для покупки акций использован <b>кредит FAB на сумму $11,980,989</b>.
+                Эта сумма не вычитается из итогов &mdash; в дэшборде показаны инвестиции.
+            </div>
             <div class="table-card">
                 <h3>&#128202; FAB &mdash; детализация по акциям <span id="fabStocksSrc" style="color:var(--text-secondary);font-weight:400;font-size:13px"></span></h3>
                 <div class="bond-table-wrap"><table class="bond-table"><thead><tr><th>Бумага</th><th>Тикер</th><th>Кол-во акций</th><th>Средняя цена покупки, $</th><th>Итого сумма покупки, $</th><th>Текущая цена, $</th><th>Текущая сумма, $</th><th>P&amp;L, USD</th><th>P&amp;L, %</th><th>Weight</th></tr></thead><tbody id="fabStocksTable"></tbody></table></div>
@@ -482,7 +486,7 @@
     // STATIC DATA (for non-crypto tabs)
     // ================================================================
     const DATA = {
-        FAB: { Depo: 8315335, bonds: 27806295, stocks: 14971071, btcQty: 1717.65, bondsBreakdown: [
+        FAB: { Depo: 8315335, bonds: 27806295, stocks: 26327951, btcQty: 1717.65, bondsBreakdown: [
             { name: "FAB_IY_Joseph", value: 22753000 },
             { name: "FAB_AK_Joseph", value: 5050295 }
         ]},

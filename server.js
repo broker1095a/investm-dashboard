@@ -28,10 +28,13 @@ const PORTFOLIO_AVG_PRICE = Math.round(PORTFOLIO_INVESTED / PORTFOLIO_BTC);
 // ─── Акции FAB (переоцениваются по рынку) ───
 // invested — фактически вложенные деньги из выписки; avg_price — средняя цена покупки.
 const FAB_STOCKS = [
-    { ticker: 'NBIS', name: 'Nebius Group',       qty:  7900, avg_price: 181.36, invested: 1432744 },
-    { ticker: 'STX',  name: 'Seagate Technology', qty: 12800, avg_price: 672.06, invested: 8602412 },
-    { ticker: 'SKHY', name: 'SK Hynix',           qty: 34500, avg_price: 143.07, invested: 4935915 }
+    { ticker: 'NBIS', name: 'Nebius Group',       qty: 30900, avg_price: 168.56, invested:  5208424 },
+    { ticker: 'STX',  name: 'Seagate Technology', qty: 12800, avg_price: 672.06, invested:  8602412 },
+    { ticker: 'SKHY', name: 'SK Hynix',           qty: 89500, avg_price: 139.86, invested: 12517115 }
 ];
+// Часть покупок профинансирована кредитом FAB. Сумма показывается припиской
+// на вкладке «Акции» и НЕ вычитается из итогов — в дэшборде отражены инвестиции.
+const FAB_STOCKS_CREDIT = 11980989;
 const FAB_STOCKS_INVESTED = FAB_STOCKS.reduce((a, p) => a + p.invested, 0);
 
 // ─── Cache ───
