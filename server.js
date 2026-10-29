@@ -30,11 +30,12 @@ const PORTFOLIO_AVG_PRICE = Math.round(PORTFOLIO_INVESTED / PORTFOLIO_BTC);
 const FAB_STOCKS = [
     { ticker: 'NBIS', name: 'Nebius Group',       qty:  36400, avg_price: 169.65, invested:  6175434 },
     { ticker: 'STX',  name: 'Seagate Technology', qty:  12800, avg_price: 672.06, invested:  8602412 },
-    { ticker: 'SKHY', name: 'SK Hynix',           qty: 103500, avg_price: 140.60, invested: 14552155 }
+    { ticker: 'SKHY', name: 'SK Hynix',           qty: 103500, avg_price: 140.60, invested: 14552155 },
+    { ticker: 'GOOGL', name: 'Alphabet / Google',  qty:  10507, avg_price: 285.51, invested:  2999854 }
 ];
 // Часть покупок профинансирована кредитом FAB. Сумма показывается припиской
 // на вкладке «Акции» и НЕ вычитается из итогов — в дэшборде отражены инвестиции.
-const FAB_STOCKS_CREDIT = 12746172;
+const FAB_STOCKS_CREDIT = 12546026;
 const FAB_STOCKS_INVESTED = FAB_STOCKS.reduce((a, p) => a + p.invested, 0);
 
 // ─── Cache ───
